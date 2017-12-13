@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.fzz.dao.mapper.UserMapper">
+    <!--User表插入数据-->
+    <insert id="saveUser" parameterType="cn.fzz.bean.UserBean">
+        insert into user(id, name) VALUES (#{id}, #{name})
+    </insert>
+    <!--<select id="getUserByID" parameterType="java.lang.Integer" resultType="com.baiwang.learn.common.model.PersonBean">-->
+        <!--SELECT * FROM demo WHERE id = #{id}-->
+    <!--</select>s-->
+    <!--<select id="getUserListByPage" parameterType="Map" resultType="com.baiwang.learn.common.model.PersonBean">-->
+        <!--SELECT * FROM demo limit #{page},#{size}-->
+    <!--</select>-->
+</mapper>
