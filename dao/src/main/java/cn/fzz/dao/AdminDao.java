@@ -50,5 +50,8 @@ public class AdminDao {
     public List<UserBean> getAll(){
         return userMapper.getAll();
     }
+    public UserBean getUserByEmail(String email){
+        return userMapper.getUserByEmail(email);
+    }
 }
 

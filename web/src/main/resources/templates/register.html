@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       lang="en">
 <head>
@@ -182,12 +183,13 @@
           });
       });
   </script>
-  <META name="GENERATOR" content="MSHTML 11.00.9600.17496" />
+  <META name="GENERATOR" content="MSHTML 11.00.9600.17496"/>
 </head>
 <body>
 <DIV class="top_div"></DIV>
 <form action="" method="post">
-  <DIV style="background: rgb(255, 255, 255); margin: -100px auto auto; border: 1px solid rgb(231, 231, 231); border-image: none; width: 400px; height: 200px; text-align: center;">
+  <DIV
+      style="background: rgb(255, 255, 255); margin: -100px auto auto; border: 1px solid rgb(231, 231, 231); border-image: none; width: 400px; height: 260px; text-align: center;">
     <DIV style="width: 165px; height: 96px; position: absolute;">
       <DIV class="tou"></DIV>
       <DIV class="initial_left_hand" id="left_hand"></DIV>
@@ -198,19 +200,26 @@
       <!--/*@thymesVar id="email" type="java.lang.String"*/-->
       <INPUT class="ipt" type="text" name="email" placeholder="请输入用户名或邮箱" th:value="${email}"/>
     </P>
-    <P style="position: relative;">
-      <SPAN class="p_logo"></SPAN>
+    <P style="position: relative;"><SPAN class="p_logo"></SPAN>
       <!--/*@thymesVar id="password" type="java.lang.String"*/-->
       <INPUT class="ipt" id="password" type="password" name="password" placeholder="请输入密码" th:value="${password}"/>
     </P>
-    <DIV style="height: 50px; line-height: normal;margin-top: 30px; border-top-color: rgb(231, 231, 231); border-top-width: 1px; border-top-style: solid;">
-      <P style="margin: 0 35px 20px 45px;">
+    <P style="padding: 10px 0px 0; position: relative;">
+      <SPAN class="n_logo">姓名</SPAN>
+      <INPUT class="ipt" type="text" name="username" placeholder="(选填)" value=""/>
+    </P>
+    <DIV
+        style="height: 50px; line-height: normal; margin-top: 30px; border-top-color: rgb(231, 231, 231); border-top-width: 1px; border-top-style: solid;">
+      <P style="margin: 0px 35px 20px 45px;">
         <SPAN style="float: left; margin: 1.2vh 0 0 0; ">
-          <A style="color: rgb(204, 204, 204);" href="#">忘记密码?</A>
         </SPAN>
         <SPAN style="float: right; margin: 0.5vh 0 0 0; ">
-          <input type="button" style="cursor:pointer; background-color: white; color: rgb(204, 204, 204); margin-right: 10px; padding: 0px; border:0; " onclick="location.href='register/'" value="注册"/>
-          <input type="submit" style="background: rgb(0, 142, 173); padding: 7px 10px; border-radius: 4px; border: 1px solid rgb(26, 117, 152); border-image: none; color: rgb(255, 255, 255); font-weight: bold;" value="登录"/>
+          <input type="button"
+                 style="cursor:pointer; background-color: white; color: rgb(204, 204, 204); margin-right: 10px; padding: 0px; border:0; "
+                 onclick="location.href='login/'" value="登录"/>
+          <input type="submit"
+                 style="cursor:pointer; background: rgb(0, 142, 173); padding: 7px 10px; border-radius: 4px; border: 1px solid rgb(26, 117, 152); border-image: none; color: rgb(255, 255, 255); font-weight: bold;"
+                 value="注册"/>
         </SPAN>
       </P>
     </DIV>

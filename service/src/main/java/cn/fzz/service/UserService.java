@@ -25,5 +25,7 @@ public interface UserService {
      */
     public int saveUser (UserBean paramter) throws SystemException;
 
-    public List<UserBean> getAll() throws SecurityException;
+    public List<UserBean> getAll() throws SystemException;
+
+    public UserBean getUserByEmail(String email) throws SystemException;
 }
