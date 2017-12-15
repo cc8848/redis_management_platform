@@ -12,6 +12,12 @@
     <artifactId>dao</artifactId>
 
     <dependencies>
+        <!--Jedis-->
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>2.9.0</version>
+        </dependency>
         <dependency>
             <groupId>cn.fzz</groupId>
             <artifactId>bean</artifactId>
@@ -63,6 +69,10 @@
             <groupId>com.alibaba</groupId>
             <artifactId>druid</artifactId>
             <version>1.1.6</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
 
