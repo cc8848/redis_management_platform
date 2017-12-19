@@ -93,5 +93,6 @@
         <module>service</module>
         <module>startup</module>
         <module>web</module>
+        <module>framework</module>
     </modules>
 </project>
