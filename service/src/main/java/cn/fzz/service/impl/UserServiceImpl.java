@@ -46,4 +46,9 @@ public class UserServiceImpl implements UserService{
     public List<UserBean> getAll() throws SecurityException {
         return adminDao.getAll();
     }
+
+    @Override
+    public UserBean getUserByEmail(String email) throws SystemException {
+        return adminDao.getUserByEmail(email);
+    }
 }
