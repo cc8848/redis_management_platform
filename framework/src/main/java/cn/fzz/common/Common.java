@@ -16,7 +16,7 @@ public class Common {
         return bean.getClass().getDeclaredFields();
     }
 
-    public static AttributeBean getAttributes(Field field, Object bean){
+    public static AttributeBean getAttribute(Field field, Object bean){
         String name = field.getName();
         String type = field.getGenericType().toString();                //获取属性的类型
 

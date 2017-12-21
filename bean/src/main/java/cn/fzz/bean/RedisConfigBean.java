@@ -263,6 +263,15 @@ public class RedisConfigBean {
         this.saveArr = saveArr;
     }
 
+    public void setSaveArr(String str){
+        String[][] saveArr = new String[3][3];
+        String[] rows = str.split(",");
+        for (int i = 0; i < saveArr.length; i++){
+            saveArr[i] = rows[i].split(" ");
+        }
+        this.saveArr = saveArr;
+    }
+
     public String[][] getClient_output_buffer_limitArr() {
         return client_output_buffer_limitArr;
     }

@@ -28,25 +28,40 @@
       <div class="form-group">
         <label for="port" class="col-sm-2 control-label">port</label>
         <div class="col-sm-2">
-          <input type="text" class="form-control" id="port" name="port" placeholder="端口(6379)" />
+          <input type="text" class="form-control" id="port" name="port" placeholder="6379" />
+        </div>
+        <label for="save" class="col-sm-2 control-label">save</label>
+        <div class="col-sm-2">
+          <input type="text" class="form-control" id="save" name="saveArr"
+                 placeholder="save 900 1, save 300 10, save 60 10000 " />
         </div>
       </div>
+
       <div class="form-group">
         <label for="bind" class="col-sm-2 control-label">bind</label>
         <div class="col-sm-2">
-          <input type="text" class="form-control" id="bind" name="bind" placeholder="bind 127.0.0.1" />
+          <input type="text" class="form-control" id="bind" name="bind" placeholder="127.0.0.1" />
+        </div>
+        <label for="loglevel" class="col-sm-2 control-label">loglevel</label>
+        <div class="col-sm-2">
+          <input type="text" class="form-control" id="loglevel" name="loglevel" placeholder="notice" />
         </div>
       </div>
+
       <div class="form-group">
         <label for="protected-mode" class="col-sm-2 control-label">protected-mode</label>
         <div class="col-sm-2">
-          <input type="text" class="form-control" id="protected-mode" name="bind" placeholder="protected-mode yes" />
+          <input type="text" class="form-control" id="protected-mode" name="bind" placeholder="yes" />
+        </div>
+        <label for="logfile" class="col-sm-2 control-label">logfile</label>
+        <div class="col-sm-2">
+          <input type="text" class="form-control" id="logfile" name="logfile" placeholder=" " />
         </div>
       </div>
 
 
       <div class="form-group">
-        <div class="col-sm-offset-2 col-sm-10">
+        <div class="col-sm-offset-4 col-sm-4  ">
           <div class="checkbox">
             <label>
               <input type="checkbox" />立即启动
@@ -55,8 +70,8 @@
         </div>
       </div>
       <div class="form-group">
-        <div class="col-sm-offset-2 col-sm-10">
-          <button type="submit" class="btn btn-default">登录</button>
+        <div class="col-sm-offset-4 col-sm-4">
+          <button type="submit" class="btn btn-default">提交</button>
         </div>
       </div>
     </form>
