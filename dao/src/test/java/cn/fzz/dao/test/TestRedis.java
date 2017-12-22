@@ -1,4 +1,4 @@
-package cn.fzz.dao.startup;
+package cn.fzz.dao.test;
 
 import java.util.*;
 
@@ -6,6 +6,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
+
+import cn.fzz.util.RedisUtil;
 
 public class TestRedis {
     private Jedis jedis;
@@ -42,7 +44,7 @@ public class TestRedis {
     /**
      * redis操作Map
      */
-    @Test
+//    @Test
     public void testMap() {
         //-----添加数据----------
         Map<String, String> map = new HashMap<String, String>();
@@ -73,7 +75,7 @@ public class TestRedis {
     /**
      * jedis操作List
      */
-    @Test
+//    @Test
     public void testList() {
         //开始前，先移除所有的内容
         jedis.del("java framework");
@@ -96,7 +98,7 @@ public class TestRedis {
     /**
      * jedis操作Set
      */
-    @Test
+//    @Test
     public void testSet() {
         //添加
         jedis.sadd("user", "liuling");
@@ -112,7 +114,7 @@ public class TestRedis {
         System.out.println(jedis.scard("user"));//返回集合的元素个数
     }
 
-    @Test
+//    @Test
     public void test() throws InterruptedException {
         //jedis 排序
         //注意，此处的rpush和lpush是List的操作。是一个双向链表（但从表现来看的）
@@ -126,7 +128,7 @@ public class TestRedis {
         System.out.println(jedis.lrange("a", 0, -1));
     }
 
-    @Test
+//    @Test
     public void testRedisPool() {
         try {
             RedisUtil.getJedis().set("newname", "中文测试");

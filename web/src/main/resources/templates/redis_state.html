@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns:th="http://www.thymeleaf.org"
+      lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css"/>
+  <!--[if lt IE 9]>
+  <script src="http://cdn.static.runoob.com/libs/jquery/1.10.2/jquery.min.js"></script>
+  <![endif]-->
+  <!--[if gte IE 9]><!-->
+  <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+  <!--<![endif]-->
+  <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <!-- HTML5 Shim 和 Respond.js 用于让 IE8 支持 HTML5元素和媒体查询 -->
+  <!-- 注意： 如果通过 file://  引入 Respond.js 文件，则该文件无法起效果 -->
+  <!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+  <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+  <![endif]-->
+  <title>Redis运行状态</title>
+</head>
+<body>
+<div class="container">
+
+  <div class="row">
+
+    <table class="table table-striped table-bordered">
+      <caption>Redis进程状态</caption>
+      <thead>
+      <tr>
+        <th>User</th>
+        <th>Link State</th>
+        <th>Version</th>
+        <th>Duration</th>
+        <th>Software Path</th>
+        <th>Config Path</th>
+      </tr>
+      </thead>
+      <tr>
+
+      <!--/*@thymesVar id="redisProcessInfo" type=""*/-->
+      <tr th:each="collect,iterStat : ${redisProcessInfo}">
+        <td th:text="${collect.username}">阿朕</td>
+        <td th:text="${collect.state}">Success</td>
+        <td th:text="${collect.version}">v 1.0</td>
+        <td th:text="${collect.duration}">1 hour</td>
+        <td th:text="${collect.redisSoftwarePath}">Software Path</td>
+        <td th:text="${collect.redisConfigPath}">Config Path</td>
+      </tr>
+
+      <tr>
+        <td>阿朕</td>
+        <td>Success</td>
+        <td>v 1.0</td>
+        <td>1 hour</td>
+        <td>Software Path</td>
+        <td>Config Path</td>
+      </tr>
+      <tr>
+      <td>User</td>
+      <td>Link</td>
+      <td>Version</td>
+      <td>Duration</td>
+      <td>Software Path</td>
+      <td>Config Path</td>
+      </tr>
+      </tbody>
+    </table>
+
+  </div>
+</div>
+
+</body>
+</html>

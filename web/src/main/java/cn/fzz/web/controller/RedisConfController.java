@@ -1,18 +1,12 @@
 package cn.fzz.web.controller;
 
-import cn.fzz.bean.RedisConfigBean;
-import cn.fzz.bean.common.AttributeBean;
 import cn.fzz.common.Common;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,107 +19,83 @@ import java.util.Map;
 @Controller
 @RequestMapping("/redis")
 public class RedisConfController {
-    private static List<Integer> ports = new ArrayList<>();
-    private static int port = 6080;
-
-    @PostMapping("/tmpConfigs")
-    public void createUserByMap(@RequestBody Map<String, Object> reqMap) {
-        String tel = reqMap.get("tel").toString();
-        String pwd = reqMap.get("pwd").toString();
-    }
-
+    /**
+     * 接收web转过来的配置参数并转换相应格式后写入文件
+     * returnCode 0--success 1--false
+     *
+     * @param reqMap
+     * @param modelMap
+     * @return
+     */
     @RequestMapping(value = "/configs")
-    public String writeConfigs(@RequestParam Map<String, String> reqMap, ModelMap modelMap) {
-
-        //校验端口号是否可用
-        String reqPort = reqMap.get("port");
-        if (StringUtils.isEmpty(reqPort)){  //如果未传入端口号， 则自动生成
-            while (ports.indexOf(port) >= 0) {
-                port++;
-            }
-            reqMap.put("port", String.valueOf(port));
-        }else if(ports.indexOf(Integer.parseInt(reqPort)) >= 0){    //如果用户传入的端口号已被占用
-            for (Object obj: reqMap.keySet()){
-                String value = reqMap.get(obj.toString());
-                if (!StringUtils.isEmpty(value)){
-                    modelMap.addAttribute(obj.toString(), value);
-                }
-            }
-            modelMap.addAttribute("error", "端口号已被占用！");
+    public String createConfig(@RequestParam Map<String, String> reqMap, ModelMap modelMap, HttpServletRequest request) {
+        if ("GET".equals(request.getMethod())) {
             return "redis_conf";
         }
 
-        //取出reqMap中的有效 K V
-        HashMap<String, String> requestMap = new HashMap<>();
-        for (Object obj: reqMap.keySet()){
+        // 取出reqMap中的有效 K V
+        for (Object obj : reqMap.keySet()) {
             String value = reqMap.get(obj.toString());
-            if (!StringUtils.isEmpty(value)){
-                requestMap.put(obj.toString(), value);
+            if (!StringUtils.isEmpty(value)) {
+                modelMap.addAttribute(obj.toString(), value);
             }
         }
 
-        //设置redis程序和redis配置文件的位置
-        String redisConfPath = "web/src/main/resources/static/configs/redis" + requestMap.get("port") + ".conf";
-        String redisExePath = "../redis/redis-server.exe";
-
-        //生成redis配置文件
-        try {
-            //        FileWriter fw = null;
-//        File directory = new File("");//设定为当前文件夹
-//        System.out.println(directory.getCanonicalPath());//获取标准的路径
-//        System.out.println(directory.getAbsolutePath());//获取绝对路径
-            FileWriter fw = new FileWriter(redisConfPath);
-
-            AttributeBean attributeBean;
-            RedisConfigBean redisConfigBean = new RedisConfigBean();
-            redisConfigBean.setPort(6380);
-
-            Field[] fields = Common.getAttributeFields(redisConfigBean);    //获得redisConfigBean中所有的属性名字
-            for (Field field : fields) {    //循环取出每个属性的内容
-                StringBuilder strToWrite = new StringBuilder(); //将要写入文件的字符串拼接成一个StringBuilder
-                attributeBean = Common.getAttribute(field, redisConfigBean);   //将一个属性的type、name、value放入attributeBean
-                String name = attributeBean.getName().replace("_", "-");    //将属性名转换为redis配置文件中的字段名
-                if (attributeBean.getType().equals("class [[Ljava.lang.String;")) {  //如果是字符串二维数组
-                    String[][] twoDimensional;
-                    if (requestMap.containsKey(name)) {
-                        String[] rowArr = requestMap.get(name).split(",");
-                        twoDimensional = new String[rowArr.length][];
-                        for (int i = 0; i < rowArr.length; i++) {
-                            String[] arr = rowArr[i].trim().split(" ");
-                            twoDimensional[i] = arr;
-                        }
-                    } else {
-                        twoDimensional = (String[][]) attributeBean.getValue();
-                    }
-                    for (String[] strArrRow : twoDimensional) {  //循环取出二维字符串数组的内容
-                        for (String str : strArrRow) {
-                            if (StringUtils.isEmpty(str)) {
-                                str = "\"\"";
-                            }
-                            strToWrite.append(str).append(" ");
-                        }
-                        strToWrite.append("\n");
-                    }
-                } else { //除二维字符串数组以外的其它类型数据
-                    strToWrite.append(name).append(" ");
-                    Object object = requestMap.containsKey(name)?requestMap.get(name):attributeBean.getValue();
-                    String value = StringUtils.isEmpty(object)?"\"\"":object.toString();
-                    strToWrite.append(value).append("\n");
-                }
-
-                fw.write(String.valueOf(strToWrite));   //将一个属性的内容写入文件
-            }
-            fw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        //校验端口号是否可用, 若未接收到port则自动生成
+        Long port = Common.checkPort(reqMap.get("port")); //如果用户传入的端口号已被占用, 则port为null
+        if (StringUtils.isEmpty(port)) {
+            modelMap.addAttribute("returnCode", "1");
+            modelMap.addAttribute("error", "端口号已被占用！");
+            return "redis_conf";
         }
+        modelMap.put("port", port.toString());
+
+        String redisSoftwarePath = "../redis/redis-server.exe"; //定义redis程序位置
+        String redisConfigPath = "web/src/main/resources/static/configs/redis" + port + ".conf";    //定义redis配置文件的位置
+        Common.writeRedisConfig(redisConfigPath, modelMap); //生成redis配置文件
+        Common.saveRedisProceedingInfo("username", redisSoftwarePath, redisConfigPath); //保存Redis程序信息
 
         //判断是否要立即启动redis服务
-        if (false) {
-            Process pr = Common.createProcess(redisExePath, redisConfPath);
+        modelMap.put("isStart", "true");    //测试阶段手动赋值， 实际应是从页面获取
+        if ("true".equals(modelMap.get("isStart"))) {
+            Process process = Common.createProcess(redisSoftwarePath, redisConfigPath);
+            if (process == null) {    //如果用户传入的端口号已被占用
+                modelMap.addAttribute("returnCode", "1");
+                modelMap.addAttribute("error", "子进程启动失败！");
+                return "redis_conf";
+            }
+            Common.updateRedisProceedingState("username", process);
         }
 
-        ports.add(port);    //更新已用的端口号列表
         return "redis_conf";
     }
+
+    /**
+     * redis进程状态
+     * @param modelMap
+     * @return
+     */
+    @RequestMapping(value = "/state")
+    public String state(ModelMap modelMap) {
+        List<Map<String, String>> redisProcesses = Common.getProcesses();
+        List<Map> redisProcessInfo = new ArrayList<>();
+
+        for (Map<String, String> redisProcess:redisProcesses){
+            Map<String, String> map = new HashMap<>();
+            map.put("username", redisProcess.get("user"));
+            map.put("state", StringUtils.isEmpty(redisProcess.get("state"))? "false":"success");
+            map.put("version", redisProcess.get("version"));
+            map.put("duration", String.valueOf((System.currentTimeMillis()-Long.valueOf(redisProcess.get("time")))
+                    /(1000*60)) + "minutes");
+            map.put("redisSoftwarePath", redisProcess.get("redisSoftwarePath"));
+            map.put("redisConfigPath", redisProcess.get("redisConfigPath"));
+            redisProcessInfo.add(map);
+        }
+
+        modelMap.addAttribute("processes", redisProcessInfo);
+        return "redis_state";
+    }
+
+//    @RequestMapping(value = "/state")
+//    public @ResponseBody
 }

@@ -1,8 +1,11 @@
-package cn.fzz.dao.startup;
+package cn.fzz.util;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+
+import java.util.List;
+import java.util.Map;
 
 public final class RedisUtil {
 
@@ -10,7 +13,7 @@ public final class RedisUtil {
     private static String ADDR = "127.0.0.1";
 
     //Redis的端口号
-    private static int PORT = 6380;
+    private static int PORT = 6379;
 
     //访问密码
 //    private static String AUTH = "admin";
@@ -56,11 +59,7 @@ public final class RedisUtil {
      */
     public synchronized static Jedis getJedis() {
         try {
-            if (jedisPool != null) {
-                return jedisPool.getResource();
-            } else {
-                return null;
-            }
+            return jedisPool != null?jedisPool.getResource(): null;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -74,7 +73,65 @@ public final class RedisUtil {
      */
     public static void returnResource(final Jedis jedis) {
         if (jedis != null) {
-            jedisPool.returnResource(jedis);
+            jedis.close();
         }
+    }
+
+    public static Boolean saveRedisString(String key, String value){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            jedis.set(key, value);
+            jedis.close();
+            return true;
+        }
+        return false;
+    }
+
+    public static Boolean saveRedisHash(String key, Map<String, String> map){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            jedis.hmset(key, map);
+            jedis.close();
+            return true;
+        }
+        return false;
+    }
+
+    public static Boolean saveRedisList(String listName, String value){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            jedis.lpush(listName, value);
+            jedis.close();
+            return true;
+        }
+        return false;
+    }
+
+    public static Map<String, String> getRedisHashAll(String key){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            Map<String, String> map = jedis.hgetAll(key);
+            jedis.close();
+            return map;
+        }
+        return null;
+    }
+
+    public static Boolean updateRedisHash(String key, Map hashMap){
+        return false;
+    }
+
+    public static Boolean updateRedisHashByUser(String username, Map hashMap){
+        return false;
+    }
+
+    public static List<String> getListByKey(String key){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            List<String> list =jedis.lrange(key, 0, -1);
+            jedis.close();
+            return list;
+        }
+        return null;
     }
 }

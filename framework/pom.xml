@@ -12,7 +12,12 @@
     <artifactId>framework</artifactId>
 
     <dependencies>
-
+        <!--Jedis-->
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>2.9.0</version>
+        </dependency>
         <!--beans-->
         <dependency>
             <groupId>cn.fzz</groupId>
