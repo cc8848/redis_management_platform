@@ -117,6 +117,16 @@ public final class RedisUtil {
         return null;
     }
 
+    public static String getRedisHashField(String key, String fieldName){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            String fieldValue = jedis.hget(key, fieldName);
+            jedis.close();
+            return fieldValue;
+        }
+        return null;
+    }
+
     public static Boolean updateRedisHash(String key, Map hashMap){
         return false;
     }

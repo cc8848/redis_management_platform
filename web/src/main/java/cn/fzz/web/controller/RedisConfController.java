@@ -1,6 +1,7 @@
 package cn.fzz.web.controller;
 
-import cn.fzz.common.Common;
+import cn.fzz.framework.common.Common;
+import cn.fzz.framework.redis.RedisCommon;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.StringUtils;
@@ -52,8 +53,8 @@ public class RedisConfController {
 
         String redisSoftwarePath = "../redis/redis-server.exe"; //定义redis程序位置
         String redisConfigPath = "web/src/main/resources/static/configs/redis" + port + ".conf";    //定义redis配置文件的位置
-        Common.writeRedisConfig(redisConfigPath, modelMap); //生成redis配置文件
-        Common.saveRedisProceedingInfo("username", redisSoftwarePath, redisConfigPath); //保存Redis程序信息
+        RedisCommon.writeRedisConfig(redisConfigPath, modelMap); //生成redis配置文件
+        RedisCommon.saveRedisProceedingInfo("username", redisSoftwarePath, redisConfigPath); //保存Redis程序信息
 
         //判断是否要立即启动redis服务
         modelMap.put("isStart", "true");    //测试阶段手动赋值， 实际应是从页面获取
@@ -64,7 +65,7 @@ public class RedisConfController {
                 modelMap.addAttribute("error", "子进程启动失败！");
                 return "redis_conf";
             }
-            Common.updateRedisProceedingState("username", process);
+            RedisCommon.updateRedisProceedingState("username", process);
         }
 
         return "redis_conf";
@@ -77,12 +78,12 @@ public class RedisConfController {
      */
     @RequestMapping(value = "/state")
     public String state(ModelMap modelMap) {
-        List<Map<String, String>> redisProcesses = Common.getProcesses();
+        List<Map<String, String>> redisProcesses = RedisCommon.getProcesses();
         List<Map> redisProcessInfo = new ArrayList<>();
 
         for (Map<String, String> redisProcess:redisProcesses){
             Map<String, String> map = new HashMap<>();
-            map.put("username", redisProcess.get("user"));
+            map.put("username", redisProcess.get("username"));
             map.put("state", StringUtils.isEmpty(redisProcess.get("state"))? "false":"success");
             map.put("version", redisProcess.get("version"));
             map.put("duration", String.valueOf((System.currentTimeMillis()-Long.valueOf(redisProcess.get("time")))

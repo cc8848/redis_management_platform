@@ -37,16 +37,15 @@
         <th>Config Path</th>
       </tr>
       </thead>
-      <tr>
-
-      <!--/*@thymesVar id="redisProcessInfo" type=""*/-->
-      <tr th:each="collect,iterStat : ${redisProcessInfo}">
-        <td th:text="${collect.username}">阿朕</td>
-        <td th:text="${collect.state}">Success</td>
-        <td th:text="${collect.version}">v 1.0</td>
-        <td th:text="${collect.duration}">1 hour</td>
-        <td th:text="${collect.redisSoftwarePath}">Software Path</td>
-        <td th:text="${collect.redisConfigPath}">Config Path</td>
+      <tbody>
+      <!--/*@thymesVar id="processes" type=""*/-->
+      <tr th:each="collect,iterStat : ${processes}">
+        <td th:text="${collect['username']}">阿朕</td>
+        <td th:text="${collect['state']}">Success</td>
+        <td th:text="${collect['version']}">v 1.0</td>
+        <td th:text="${collect['duration']}">1 hour</td>
+        <td th:text="${collect['redisSoftwarePath']}">Software Path</td>
+        <td th:text="${collect['redisConfigPath']}">Config Path</td>
       </tr>
 
       <tr>
@@ -58,12 +57,12 @@
         <td>Config Path</td>
       </tr>
       <tr>
-      <td>User</td>
-      <td>Link</td>
-      <td>Version</td>
-      <td>Duration</td>
-      <td>Software Path</td>
-      <td>Config Path</td>
+        <td>User</td>
+        <td>Link</td>
+        <td>Version</td>
+        <td>Duration</td>
+        <td>Software Path</td>
+        <td>Config Path</td>
       </tr>
       </tbody>
     </table>
