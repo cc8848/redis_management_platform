@@ -43,7 +43,7 @@ public class RedisConfController {
         }
 
         //校验端口号是否可用, 若未接收到port则自动生成
-        Long port = Common.checkPort(reqMap.get("port")); //如果用户传入的端口号已被占用, 则port为null
+        Integer port = Common.checkPort(reqMap.get("port")); //如果用户传入的端口号已被占用, 则port为null
         if (StringUtils.isEmpty(port)) {
             modelMap.addAttribute("returnCode", "1");
             modelMap.addAttribute("error", "端口号已被占用！");
@@ -52,9 +52,15 @@ public class RedisConfController {
         modelMap.put("port", port.toString());
 
         String redisSoftwarePath = "../redis/redis-server.exe"; //定义redis程序位置
-        String redisConfigPath = "web/src/main/resources/static/configs/redis" + port + ".conf";    //定义redis配置文件的位置
-        RedisCommon.writeRedisConfig(redisConfigPath, modelMap); //生成redis配置文件
-        RedisCommon.saveRedisProceedingInfo("username", redisSoftwarePath, redisConfigPath); //保存Redis程序信息
+        String redisConfigPath = "web/src/main/resources/configs/redis" + port + ".conf";    //定义redis配置文件的位置
+        modelMap.put("redisSoftwarePath", redisSoftwarePath);
+        modelMap.put("redisConfigPath", redisConfigPath);
+        if (!RedisCommon.writeRedisConfig(modelMap)) //生成redis配置文件
+        {
+            modelMap.addAttribute("returnCode", "1");
+            modelMap.addAttribute("error", "生成配置文件失败！");
+            return "redis_conf";
+        }
 
         //判断是否要立即启动redis服务
         modelMap.put("isStart", "true");    //测试阶段手动赋值， 实际应是从页面获取

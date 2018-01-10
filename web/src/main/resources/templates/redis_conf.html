@@ -28,7 +28,8 @@
       <div class="form-group">
         <label for="port" class="col-sm-2 control-label">port</label>
         <div class="col-sm-2">
-          <input type="text" class="form-control" id="port" name="port" placeholder="6379" />
+          <!--/*@thymesVar id="port" type=""*/-->
+          <input type="text" class="form-control" id="port" name="port" placeholder="6379" th:value="${port}"/>
         </div>
         <label for="save" class="col-sm-2 control-label">save</label>
         <div class="col-sm-2">
