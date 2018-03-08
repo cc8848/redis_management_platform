@@ -144,4 +144,24 @@ public final class RedisUtil {
         }
         return null;
     }
+
+    public static Boolean deleteByKey(String key){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            jedis.del(key);
+            jedis.close();
+            return true;
+        }
+        return false;
+    }
+
+    public static Boolean delListByValue(String key, String value){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            jedis.lrem(key, 0, value);
+            jedis.close();
+            return true;
+        }
+        return false;
+    }
 }

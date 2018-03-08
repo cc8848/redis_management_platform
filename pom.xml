@@ -94,5 +94,6 @@
         <module>startup</module>
         <module>web</module>
         <module>framework</module>
+        <module>integration</module>
     </modules>
 </project>

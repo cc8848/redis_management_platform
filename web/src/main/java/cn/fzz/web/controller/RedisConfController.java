@@ -20,6 +20,44 @@ import java.util.Map;
 @Controller
 @RequestMapping("/redis")
 public class RedisConfController {
+
+    @RequestMapping(value = "/redisConf")
+    public String createRedisConfig(@RequestParam Map<String, String> reqMap, ModelMap modelMap,
+                                    HttpServletRequest request) {
+        if ("GET".equals(request.getMethod())) {
+            modelMap.addAttribute("machineList", RedisCommon.getListFromRedis("machine1List"));
+            modelMap.addAttribute("alreadyList", RedisCommon.getListFromRedis("alreadyList"));
+            modelMap.addAttribute("failedList", RedisCommon.getListFromRedis("failedList"));
+            return "redis_conf";
+        }
+
+        Map<String, String> redisConf = new HashMap<>();
+
+        // 取出reqMap中的有效 K V
+        for (Object obj : reqMap.keySet()) {
+            String value = reqMap.get(obj.toString());
+            if (!StringUtils.isEmpty(value)) {
+                redisConf.put(obj.toString(), value);
+                modelMap.addAttribute(obj.toString(), value);
+            }
+        }
+        if (!StringUtils.isEmpty(reqMap.get("machine")) && !StringUtils.isEmpty(reqMap.get("NO."))) {
+            redisConf.remove("machine");
+            redisConf.remove("NO.");
+            String redisName = reqMap.get("machine") + "-NO." + reqMap.get("NO.");
+            RedisCommon.delListByValue("alreadyList", redisName);
+            RedisCommon.delListByValue("failedList", redisName + " 端口号已被占用！");
+            RedisCommon.saveRedisList(reqMap.get("machine") + "List", redisName);
+            RedisCommon.saveRedisHash(redisName, redisConf);
+        }
+
+        modelMap.addAttribute("machineList", RedisCommon.getListFromRedis("machine1List"));
+        modelMap.addAttribute("alreadyList", RedisCommon.getListFromRedis("alreadyList"));
+        modelMap.addAttribute("failedList", RedisCommon.getListFromRedis("failedList"));
+        return "redis_conf";
+    }
+
+
     /**
      * 接收web转过来的配置参数并转换相应格式后写入文件
      * returnCode 0--success 1--false
@@ -38,6 +76,11 @@ public class RedisConfController {
         for (Object obj : reqMap.keySet()) {
             String value = reqMap.get(obj.toString());
             if (!StringUtils.isEmpty(value)) {
+                if (obj.toString().equals("nickname")){
+                    RedisCommon.nickname = value;
+                    continue;
+                }
+
                 modelMap.addAttribute(obj.toString(), value);
             }
         }
@@ -55,7 +98,7 @@ public class RedisConfController {
         String redisConfigPath = "web/src/main/resources/configs/redis" + port + ".conf";    //定义redis配置文件的位置
         modelMap.put("redisSoftwarePath", redisSoftwarePath);
         modelMap.put("redisConfigPath", redisConfigPath);
-        if (!RedisCommon.writeRedisConfig(modelMap)) //生成redis配置文件
+        if (!RedisCommon.writeRedisConfig(modelMap)) //生成redis配置文件并存储信息
         {
             modelMap.addAttribute("returnCode", "1");
             modelMap.addAttribute("error", "生成配置文件失败！");
@@ -71,9 +114,10 @@ public class RedisConfController {
                 modelMap.addAttribute("error", "子进程启动失败！");
                 return "redis_conf";
             }
-            RedisCommon.updateRedisProceedingState("username", process);
+            RedisCommon.updateRedisProceedingState(RedisCommon.nickname, process);
         }
 
+        modelMap.put("port", Integer.valueOf(modelMap.get("port").toString())+1);
         return "redis_conf";
     }
 
@@ -102,7 +146,4 @@ public class RedisConfController {
         modelMap.addAttribute("processes", redisProcessInfo);
         return "redis_state";
     }
-
-//    @RequestMapping(value = "/state")
-//    public @ResponseBody
 }

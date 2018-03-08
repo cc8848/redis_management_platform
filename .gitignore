@@ -15,6 +15,7 @@ out
 target
 conf_dev
 *.pyc
+*.conf
 
 # OSX temp files
 .DS_Store

@@ -25,8 +25,6 @@ public class RedisConfigBean {
     private String notify_keyspace_events;
     private String activerehashing;
     private String aof_rewrite_incremental_fsync;
-    private String softwarePath;
-    private String configPath;
     private String[][] saveArr;
     private String[][] client_output_buffer_limitArr;
     private Integer port;
@@ -255,22 +253,6 @@ public class RedisConfigBean {
 
     public void setAof_rewrite_incremental_fsync(String aof_rewrite_incremental_fsync) {
         this.aof_rewrite_incremental_fsync = aof_rewrite_incremental_fsync;
-    }
-
-    public String getSoftwarePath() {
-        return softwarePath;
-    }
-
-    public void setSoftwarePath(String softwarePath) {
-        this.softwarePath = softwarePath;
-    }
-
-    public String getConfigPath() {
-        return configPath;
-    }
-
-    public void setConfigPath(String configPath) {
-        this.configPath = configPath;
     }
 
     public String[][] getSaveArr() {

@@ -39,6 +39,7 @@ public class Common {
                 ports.add(port);
             }while (readPort != null && readPort.size() != 0);
         } else {
+            port = Integer.parseInt(object.toString());
             List<String> readPort = netstat_anoByPort(port);
             if (ports.indexOf(new Integer(object.toString())) >= 0 || readPort!= null && readPort.size() != 0) {    //如果用户传入的端口号已被占用
                 return null;

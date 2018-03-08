@@ -16,7 +16,8 @@ import java.util.*;
  * Desc:
  */
 public class RedisCommon {
-
+    //暂时用静态变量存储用户名， 完善登录模块之后改为从session获取用户信息
+    public static String nickname = "nickname";
 
     /**
      * 根据用户名启动redis服务
@@ -43,7 +44,7 @@ public class RedisCommon {
     public static void saveRedisProceedingInfo(Map modelMap) {
         String redisSoftwarePath = String.valueOf(modelMap.get("redisSoftwarePath"));
         String redisConfigPath = String.valueOf(modelMap.get("redisConfigPath"));
-        String username = "username";
+        String username = nickname;
         Map<String, String> map = new HashMap<>();
         map.put("port", String.valueOf(modelMap.get("port")));
         map.put("state", "");
@@ -52,7 +53,7 @@ public class RedisCommon {
         map.put("redisSoftwarePath", redisSoftwarePath);
         map.put("redisConfigPath", redisConfigPath);
         List<String> redisProceedingNames = RedisUtil.getListByKey("redisProceedingName");
-        if (StringUtils.isEmpty(redisProceedingNames) || !redisProceedingNames.contains("username")){
+        if (!StringUtils.isEmpty(redisProceedingNames) && !redisProceedingNames.contains(nickname)){
             RedisUtil.saveRedisList("redisProceedingName", username);
         }else {
             redisConfigPath = RedisUtil.getRedisHashField(username, "redisConfigPath");
@@ -74,6 +75,14 @@ public class RedisCommon {
         RedisUtil.saveRedisHash(username, map);
     }
 
+    public static Boolean saveRedisHash(String key, Map<String, String> map){
+        return RedisUtil.saveRedisHash(key, map);
+    }
+
+    public static Map<String, String> getRedisHashAll(String key){
+        return RedisUtil.getRedisHashAll(key);
+    }
+
     /**
      * 取出key对应的list
      * @param key
@@ -83,11 +92,19 @@ public class RedisCommon {
         return RedisUtil.getListByKey(key);
     }
 
-    /**
-     * 根据key取出redis中的hash
-     * @param key
-     * @return
-     */
+    public static Boolean deleteRedisByKey(String key){
+        return RedisUtil.deleteByKey(key);
+    }
+
+    public static Boolean delListByValue(String key, String value) {
+        return RedisUtil.delListByValue(key, value);
+    }
+
+        /**
+         * 根据key取出redis中的hash
+         * @param key
+         * @return
+         */
     public static Map<String, String> getHashFromRedis(String key){
         return RedisUtil.getRedisHashAll(key);
     }
@@ -118,15 +135,10 @@ public class RedisCommon {
     public static Boolean writeRedisConfig(Map modelMap) {
         AttributeBean attributeBean;    //用来存储RedisConfigBean中单个属性的type、name、value
         RedisConfigBean redisConfigBean = new RedisConfigBean();    //生成默认配置文件类
-        redisConfigBean.setSoftwarePath(String.valueOf(modelMap.get("redisSoftwarePath")));
-        redisConfigBean.setConfigPath(String.valueOf(modelMap.get("redisConfigPath")));
         try {
-            FileWriter fw = new FileWriter(redisConfigBean.getConfigPath());            //
+            FileWriter fw = new FileWriter(String.valueOf(modelMap.get("redisConfigPath")));            //
             Field[] fields = Common.getAttributeFields(redisConfigBean);    //获得redisConfigBean中所有的属性名字
             for (Field field : fields) {    //循环取出每个属性的内容
-                if ("softwarePath".equals(field.toString()) || "configPath".equals(field.toString())){
-                    continue;
-                }
                 StringBuilder strToWrite = new StringBuilder(); //将要写入文件的字符串拼接成一个StringBuilder
                 attributeBean = Common.getAttribute(field, redisConfigBean);   //将一个属性的type、name、value放入attributeBean
                 String name = attributeBean.getName().replace("_", "-");    //将属性名转换为redis配置文件中的字段名
@@ -161,11 +173,15 @@ public class RedisCommon {
                 fw.write(String.valueOf(strToWrite));   //将一个属性的内容写入文件
             }
             fw.close();
-            saveRedisProceedingInfo(modelMap); //保存Redis程序信息
+            //saveRedisProceedingInfo(modelMap); //保存Redis程序信息
             return true;
         } catch (IOException e) {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public static Boolean saveRedisList(String key, String value){
+        return RedisUtil.saveRedisList(key, value);
     }
 }

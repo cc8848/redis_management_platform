@@ -25,8 +25,8 @@ public class Main {
     }
 
     private void setup(Jedis jedis) {
-        jedis.set("name" + count, "xinxin" + count);//向key-->name中放入了value-->xinxin
-        System.out.println(jedis.get("name" + count));//执行结果：xinxin
+        jedis.set("name" + count, "andy" + count);//向key-->name中放入了value-->andy
+        System.out.println(jedis.get("name" + count));//执行结果：andy
         count++;
     }
 }
