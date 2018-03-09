@@ -29,7 +29,7 @@
       <caption>Redis进程状态</caption>
       <thead>
       <tr>
-        <th>User</th>
+        <th>Task Name</th>
         <th>Link State</th>
         <th>Version</th>
         <th>Duration</th>
@@ -40,7 +40,7 @@
       <tbody>
       <!--/*@thymesVar id="processes" type=""*/-->
       <tr th:each="collect,iterStat : ${processes}">
-        <td th:text="${collect['username']}">Andy</td>
+        <td th:text="${collect['taskName']}">Andy</td>
         <td th:text="${collect['state']}">Success</td>
         <td th:text="${collect['version']}">v 1.0</td>
         <td th:text="${collect['duration']}">1 hour</td>

@@ -2,6 +2,7 @@ package cn.fzz.web.controller;
 
 import cn.fzz.framework.common.Common;
 import cn.fzz.framework.redis.RedisCommon;
+import cn.fzz.framework.redis.RedisConnection;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.StringUtils;
@@ -24,39 +25,44 @@ public class RedisConfController {
     @RequestMapping(value = "/redisConf")
     public String createRedisConfig(@RequestParam Map<String, String> reqMap, ModelMap modelMap,
                                     HttpServletRequest request) {
-        if ("GET".equals(request.getMethod())) {
-            modelMap.addAttribute("machineList", RedisCommon.getListFromRedis("machine1List"));
-            modelMap.addAttribute("alreadyList", RedisCommon.getListFromRedis("alreadyList"));
-            modelMap.addAttribute("failedList", RedisCommon.getListFromRedis("failedList"));
-            return "redis_conf";
-        }
+        if (!"GET".equals(request.getMethod())) {
+            Map<String, String> redisConf = new HashMap<>();
 
-        Map<String, String> redisConf = new HashMap<>();
-
-        // 取出reqMap中的有效 K V
-        for (Object obj : reqMap.keySet()) {
-            String value = reqMap.get(obj.toString());
-            if (!StringUtils.isEmpty(value)) {
-                redisConf.put(obj.toString(), value);
-                modelMap.addAttribute(obj.toString(), value);
+            // 取出reqMap中的有效 K V
+            for (Object obj : reqMap.keySet()) {
+                String value = reqMap.get(obj.toString());
+                if (!StringUtils.isEmpty(value)) {
+                    redisConf.put(obj.toString(), value);
+                    modelMap.addAttribute(obj.toString(), value);
+                }
+            }
+            if (!StringUtils.isEmpty(reqMap.get("machine")) && !StringUtils.isEmpty(reqMap.get("NO."))) {
+                redisConf.remove("machine");
+                redisConf.remove("NO.");
+                String redisName = reqMap.get("machine") + "-NO." + reqMap.get("NO.");
+                RedisCommon.delListByValue("failedList", redisName);
+                RedisCommon.saveRedisList(reqMap.get("machine") + "List", redisName);
+                RedisCommon.saveRedisHash(redisName, redisConf);
             }
         }
-        if (!StringUtils.isEmpty(reqMap.get("machine")) && !StringUtils.isEmpty(reqMap.get("NO."))) {
-            redisConf.remove("machine");
-            redisConf.remove("NO.");
-            String redisName = reqMap.get("machine") + "-NO." + reqMap.get("NO.");
-            RedisCommon.delListByValue("alreadyList", redisName);
-            RedisCommon.delListByValue("failedList", redisName + " 端口号已被占用！");
-            RedisCommon.saveRedisList(reqMap.get("machine") + "List", redisName);
-            RedisCommon.saveRedisHash(redisName, redisConf);
-        }
 
-        modelMap.addAttribute("machineList", RedisCommon.getListFromRedis("machine1List"));
+        List<String> taskList = new ArrayList<>();
+        List<String> machineList = RedisCommon.getListFromRedis("machineList");
+        for (String machine : machineList){
+            taskList.addAll(RedisCommon.getListFromRedis(machine + "List"));
+        }
+        modelMap.addAttribute("taskList", taskList);
+
         modelMap.addAttribute("alreadyList", RedisCommon.getListFromRedis("alreadyList"));
-        modelMap.addAttribute("failedList", RedisCommon.getListFromRedis("failedList"));
+
+        List<String> failedLogList = new ArrayList<>();
+        List<String> failedList = RedisCommon.getListFromRedis("failedList");
+        for (String failedName : failedList){
+            failedLogList.add(failedName + "\t" + RedisCommon.getHashFromRedis("failedLog").get(failedName));
+        }
+        modelMap.addAttribute("failedList", failedLogList);
         return "redis_conf";
     }
-
 
     /**
      * 接收web转过来的配置参数并转换相应格式后写入文件
@@ -77,7 +83,6 @@ public class RedisConfController {
             String value = reqMap.get(obj.toString());
             if (!StringUtils.isEmpty(value)) {
                 if (obj.toString().equals("nickname")){
-                    RedisCommon.nickname = value;
                     continue;
                 }
 
@@ -114,7 +119,7 @@ public class RedisConfController {
                 modelMap.addAttribute("error", "子进程启动失败！");
                 return "redis_conf";
             }
-            RedisCommon.updateRedisProceedingState(RedisCommon.nickname, process);
+//            RedisCommon.updateRedisProceedingState(RedisCommon.nickname, process);
         }
 
         modelMap.put("port", Integer.valueOf(modelMap.get("port").toString())+1);
@@ -133,11 +138,11 @@ public class RedisConfController {
 
         for (Map<String, String> redisProcess:redisProcesses){
             Map<String, String> map = new HashMap<>();
-            map.put("username", redisProcess.get("username"));
-            map.put("state", StringUtils.isEmpty(redisProcess.get("state"))? "false":"success");
+            map.put("taskName", redisProcess.get("taskName"));
+            map.put("state", new RedisConnection(Integer.parseInt(redisProcess.get("port"))).ping().equals("PONG") ?
+                    "success" : "fail");
             map.put("version", redisProcess.get("version"));
-            map.put("duration", String.valueOf((System.currentTimeMillis()-Long.valueOf(redisProcess.get("time")))
-                    /(1000*60)) + "minutes");
+            map.put("duration", Common.getDurByTimeMillis(Long.valueOf(redisProcess.get("time"))));
             map.put("redisSoftwarePath", redisProcess.get("redisSoftwarePath"));
             map.put("redisConfigPath", redisProcess.get("redisConfigPath"));
             redisProcessInfo.add(map);

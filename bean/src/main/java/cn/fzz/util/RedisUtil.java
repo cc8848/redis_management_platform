@@ -39,14 +39,18 @@ public final class RedisUtil {
      * 初始化Redis连接池
      */
     static {
+        initJedisPool();
+    }
+
+    private static void initJedisPool(){
         try {
             JedisPoolConfig config = new JedisPoolConfig();
-            config.setMaxTotal(MAX_ACTIVE);
             config.setMaxIdle(MAX_IDLE);
+            config.setMaxTotal(MAX_ACTIVE);
             config.setMaxWaitMillis(MAX_WAIT);
             config.setTestOnBorrow(TEST_ON_BORROW);
-//            jedisPool = new JedisPool(config, ADDR, PORT, TIMEOUT, AUTH);
-            jedisPool = new JedisPool(config, ADDR, PORT, TIMEOUT);
+            jedisPool = new JedisPool(config, ADDR, PORT, TIMEOUT); //jedisPool = new JedisPool(config, ADDR, PORT, TIMEOUT, AUTH);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -75,6 +79,29 @@ public final class RedisUtil {
         if (jedis != null) {
             jedis.close();
         }
+    }
+
+    public static String pingByPort(int port){
+        PORT = port;
+        initJedisPool();
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            String ping = jedis.ping();
+            jedis.close();
+            return ping.equals("PONG")?"success":"fail";
+        }
+        return "fail";
+    }
+
+    public static Boolean checkByPort(int port){
+        PORT = port;
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            String ping = jedis.ping();
+            jedis.close();
+            return ping.equals("PONG");
+        }
+        return false;
     }
 
     public static Boolean saveRedisString(String key, String value){

@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
  */
 public class Common {
     //记录当前已使用的端口号
-    private static List<Integer> ports = new ArrayList<>();
+    private static List<Integer> portList = new ArrayList<>();
     private static int port = 6380;
 
     /**
@@ -32,22 +32,52 @@ public class Common {
         if (StringUtils.isEmpty(object)) {  //如果未传入端口号， 则自动生成
             List<String> readPort;
             do {
-                while (ports.indexOf(port) >= 0) {
+                while (portList.indexOf(port) >= 0) {
                     port++;
                 }
                 readPort = netstat_anoByPort(port);
-                ports.add(port);
+                portList.add(port);
             }while (readPort != null && readPort.size() != 0);
         } else {
             port = Integer.parseInt(object.toString());
             List<String> readPort = netstat_anoByPort(port);
-            if (ports.indexOf(new Integer(object.toString())) >= 0 || readPort!= null && readPort.size() != 0) {    //如果用户传入的端口号已被占用
+            if (portList.indexOf(new Integer(object.toString())) >= 0 || readPort!= null && readPort.size() != 0) {    //如果用户传入的端口号已被占用
                 return null;
             }
-            ports.add(port);
+            portList.add(port);
         }
 
         return port;
+    }
+
+    public static void removePort(Integer p){
+        portList.remove(p);
+    }
+
+    public static String getDurByTimeMillis(Long timeMillis){
+        Long ms = System.currentTimeMillis()-timeMillis;
+        if (ms<1000){
+            return ms.toString() + "ms";
+        }
+        Long s = ms/1000;
+        if (s<60){
+            return s.toString() + "s";
+        }
+        Long minute = s/60;
+        if (minute<60){
+            return minute.toString()+"min";
+        }
+        Long hour = minute/60;
+        minute = minute%60;
+        if (hour<24){
+            return "00:" + hour + ":" + minute;
+        }
+        Long day = hour/24;
+        hour = hour%24;
+        if (day<99){
+            return day.toString() + ":" + hour + ":" + minute;
+        }
+        return day.toString() + "days";
     }
 
     /**
@@ -119,11 +149,11 @@ public class Common {
     /**
      * 根据端口号杀死进程
      *
-     * @param port
+     * @param p
      */
-    public static void killProcessByPort(int port) {
+    public static void killProcessByPort(int p) {
         //查找进程号
-        List<String> read = netstat_anoByPort(port);
+        List<String> read = netstat_anoByPort(p);
         if ((read == null || read.size() == 0)) {
             System.out.println("找不到该端口的进程");
         } else {
@@ -133,14 +163,15 @@ public class Common {
             System.out.println("找到" + read.size() + "个进程，正在准备清理");
             killProcess(read);
         }
+        removePort(p);
     }
 
-    public static List<String> netstat_anoByPort(int port) {
+    public static List<String> netstat_anoByPort(int p) {
         Runtime runtime = Runtime.getRuntime();
         try {
-            Process process = runtime.exec("cmd /c netstat -ano | findstr \"" + port + "\"");
+            Process process = runtime.exec("cmd /c netstat -ano | findstr \"" + p + "\"");
             InputStream inputStream = process.getInputStream();
-            return read(inputStream, port);
+            return read(inputStream, p);
         } catch (IOException e) {
             e.printStackTrace();
             return null;

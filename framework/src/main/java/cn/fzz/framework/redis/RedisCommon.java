@@ -16,9 +16,6 @@ import java.util.*;
  * Desc:
  */
 public class RedisCommon {
-    //暂时用静态变量存储用户名， 完善登录模块之后改为从session获取用户信息
-    public static String nickname = "nickname";
-
     /**
      * 根据用户名启动redis服务
      *
@@ -38,30 +35,31 @@ public class RedisCommon {
     /**
      * 保存Redis程序信息
      *
-     * @param modelMap
+     * @param redisInfoMap
      * @return
      */
-    public static void saveRedisProceedingInfo(Map modelMap) {
-        String redisSoftwarePath = String.valueOf(modelMap.get("redisSoftwarePath"));
-        String redisConfigPath = String.valueOf(modelMap.get("redisConfigPath"));
-        String username = nickname;
+    public static void saveRedisProceedingInfo(Map redisInfoMap) {
+        String redisSoftwarePath = String.valueOf(redisInfoMap.get("redisSoftwarePath"));
+        String redisConfigPath = String.valueOf(redisInfoMap.get("redisConfigPath"));
+        String redisTaskName = redisInfoMap.get("redisTaskName").toString();
         Map<String, String> map = new HashMap<>();
-        map.put("port", String.valueOf(modelMap.get("port")));
-        map.put("state", "");
+        map.put("port", String.valueOf(redisInfoMap.get("port")));
         map.put("version", "v3.2.100");
         map.put("time", String.valueOf(System.currentTimeMillis()));
         map.put("redisSoftwarePath", redisSoftwarePath);
         map.put("redisConfigPath", redisConfigPath);
+        /*
         List<String> redisProceedingNames = RedisUtil.getListByKey("redisProceedingName");
         if (!StringUtils.isEmpty(redisProceedingNames) && !redisProceedingNames.contains(nickname)){
-            RedisUtil.saveRedisList("redisProceedingName", username);
+            RedisUtil.saveRedisList("redisTaskName", redisTaskName);
         }else {
-            redisConfigPath = RedisUtil.getRedisHashField(username, "redisConfigPath");
+            redisConfigPath = RedisUtil.getRedisHashField(redisTaskName, "redisConfigPath");
             if (redisConfigPath != null) {
-                Common.killProcessByPort(new Integer(modelMap.get("port").toString()));
+                Common.killProcessByPort(new Integer(redisInfoMap.get("port").toString()));
             }
         }
-        RedisUtil.saveRedisHash(username, map);
+        */
+        RedisUtil.saveRedisHash(redisTaskName + "State", map);
     }
 
     /**
@@ -115,11 +113,11 @@ public class RedisCommon {
      */
     public static List<Map<String, String>> getProcesses(){
         List<Map<String, String>> processes = new ArrayList<>();
-        List<String> users = getListFromRedis("redisProceedingName");
-        for (String string:users){
-            Map<String, String> map = RedisUtil.getRedisHashAll(string);
+        List<String> tasks = getListFromRedis("alreadyList");
+        for (String string:tasks){
+            Map<String, String> map = RedisUtil.getRedisHashAll(string + "State");
             if (map != null) {
-                map.put("username", string);
+                map.put("taskName", string);
             }
             processes.add(map);
         }
@@ -127,7 +125,7 @@ public class RedisCommon {
     }
 
     /**
-     * 生成redis配置文件
+     * 生成redis配置文件， 并存储redis信息
      *
      * @param modelMap
      * @return
@@ -173,7 +171,6 @@ public class RedisCommon {
                 fw.write(String.valueOf(strToWrite));   //将一个属性的内容写入文件
             }
             fw.close();
-            //saveRedisProceedingInfo(modelMap); //保存Redis程序信息
             return true;
         } catch (IOException e) {
             e.printStackTrace();
@@ -183,5 +180,14 @@ public class RedisCommon {
 
     public static Boolean saveRedisList(String key, String value){
         return RedisUtil.saveRedisList(key, value);
+    }
+
+    public static void killRedisTaskByName(String redisTaskName){
+        Map redisTaskStateMap = getRedisHashAll(redisTaskName+"State");
+        if (redisTaskStateMap.size()>0){
+            int port = Integer.parseInt(redisTaskStateMap.get("port").toString());
+            Common.killProcessByPort(port);
+            RedisCommon.delListByValue("alreadyList", redisTaskName);
+        }
     }
 }
