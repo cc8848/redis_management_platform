@@ -6,6 +6,7 @@ import redis.clients.jedis.JedisPoolConfig;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by Administrator on 2018/3/9.
@@ -105,6 +106,76 @@ public class RedisConnection {
             return ping;
         }
         return "fail";
+    }
+
+    public Set<String> getKeys(){
+        Jedis jedis = getJedis();
+        if (jedis != null) {
+            Set<String> keys = jedis.keys("*");
+            jedis.close();
+            return keys;
+        }
+        return null;
+    }
+
+    public String getTypeByKey(String key){
+        Jedis jedis = getJedis();
+        if (jedis != null) {
+            String type = jedis.type(key);
+            jedis.close();
+            return type;
+        }
+        return null;
+    }
+
+    public String getEncodingByKey(String key){
+        Jedis jedis = getJedis();
+        if (jedis != null) {
+            String encoding = jedis.objectEncoding(key);
+            jedis.close();
+            return encoding;
+        }
+        return null;
+    }
+
+    public Long getCountByKey(String key){
+        Jedis jedis = getJedis();
+        if (jedis != null) {
+            Long refCount = jedis.objectRefcount(key);
+            jedis.close();
+            return refCount;
+        }
+        return null;
+    }
+
+    public Long getIdleTimeByKey(String key){
+        Jedis jedis = getJedis();
+        if (jedis != null) {
+            Long idleTime = jedis.objectIdletime(key);
+            jedis.close();
+            return idleTime;
+        }
+        return null;
+    }
+
+    public Long getValidTimeByKey(String key){
+        Jedis jedis = getJedis();
+        if (jedis != null) {
+            Long validTime = jedis.ttl(key);
+            jedis.close();
+            return validTime;
+        }
+        return null;
+    }
+
+    public String getInfo(){
+        Jedis jedis = getJedis();
+        if (jedis != null) {
+            String info = jedis.info();
+            jedis.close();
+            return info;
+        }
+        return null;
     }
 
     public Boolean checkByport(int port) {

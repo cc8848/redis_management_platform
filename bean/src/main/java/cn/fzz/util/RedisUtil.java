@@ -81,6 +81,16 @@ public final class RedisUtil {
         }
     }
 
+    public static String getStringByKey(String key){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            String string = jedis.get(key);
+            jedis.close();
+            return string;
+        }
+        return null;
+    }
+
     public static String pingByPort(int port){
         PORT = port;
         initJedisPool();
@@ -140,6 +150,16 @@ public final class RedisUtil {
             Map<String, String> map = jedis.hgetAll(key);
             jedis.close();
             return map;
+        }
+        return null;
+    }
+
+    public static String getHashFeildValue(String key, String childKey){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            String value = jedis.hget(key, childKey);
+            jedis.close();
+            return value;
         }
         return null;
     }

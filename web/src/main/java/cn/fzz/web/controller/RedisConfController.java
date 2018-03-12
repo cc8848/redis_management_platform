@@ -3,16 +3,15 @@ package cn.fzz.web.controller;
 import cn.fzz.framework.common.Common;
 import cn.fzz.framework.redis.RedisCommon;
 import cn.fzz.framework.redis.RedisConnection;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import com.alibaba.fastjson.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by fanzezhen on 2017/12/19.
@@ -48,7 +47,7 @@ public class RedisConfController {
 
         List<String> taskList = new ArrayList<>();
         List<String> machineList = RedisCommon.getListFromRedis("machineList");
-        for (String machine : machineList){
+        for (String machine : machineList) {
             taskList.addAll(RedisCommon.getListFromRedis(machine + "List"));
         }
         modelMap.addAttribute("taskList", taskList);
@@ -57,7 +56,7 @@ public class RedisConfController {
 
         List<String> failedLogList = new ArrayList<>();
         List<String> failedList = RedisCommon.getListFromRedis("failedList");
-        for (String failedName : failedList){
+        for (String failedName : failedList) {
             failedLogList.add(failedName + "\t" + RedisCommon.getHashFromRedis("failedLog").get(failedName));
         }
         modelMap.addAttribute("failedList", failedLogList);
@@ -82,7 +81,7 @@ public class RedisConfController {
         for (Object obj : reqMap.keySet()) {
             String value = reqMap.get(obj.toString());
             if (!StringUtils.isEmpty(value)) {
-                if (obj.toString().equals("nickname")){
+                if (obj.toString().equals("nickname")) {
                     continue;
                 }
 
@@ -122,12 +121,13 @@ public class RedisConfController {
 //            RedisCommon.updateRedisProceedingState(RedisCommon.nickname, process);
         }
 
-        modelMap.put("port", Integer.valueOf(modelMap.get("port").toString())+1);
+        modelMap.put("port", Integer.valueOf(modelMap.get("port").toString()) + 1);
         return "redis_conf";
     }
 
     /**
      * redis进程状态
+     *
      * @param modelMap
      * @return
      */
@@ -136,7 +136,7 @@ public class RedisConfController {
         List<Map<String, String>> redisProcesses = RedisCommon.getProcesses();
         List<Map> redisProcessInfo = new ArrayList<>();
 
-        for (Map<String, String> redisProcess:redisProcesses){
+        for (Map<String, String> redisProcess : redisProcesses) {
             Map<String, String> map = new HashMap<>();
             map.put("taskName", redisProcess.get("taskName"));
             map.put("state", new RedisConnection(Integer.parseInt(redisProcess.get("port"))).ping().equals("PONG") ?
@@ -151,4 +151,104 @@ public class RedisConfController {
         modelMap.addAttribute("processes", redisProcessInfo);
         return "redis_state";
     }
+
+    @RequestMapping(value = "/redisData")
+    public String redisData(ModelMap modelMap) {
+        List<Map> stringList = new ArrayList<>();
+        List<Map> listList = new ArrayList<>();
+        List<Map> hashList = new ArrayList<>();
+        RedisConnection redisConnection = new RedisConnection();
+
+
+        Map<String, List> redisInfoMap = new HashMap<>();
+        String redisInfoStr = redisConnection.getInfo().replace("\r", "");
+        String[] redisInfoArr = redisInfoStr.split("# ");
+        for (String string : redisInfoArr) {
+            String[] redisInfoPartArr = string.split("\n");
+            if (redisInfoPartArr.length > 1) {
+                List<String> redisInfoPartList = new ArrayList<>(Arrays.asList(redisInfoPartArr)
+                        .subList(1, redisInfoPartArr.length));
+
+                redisInfoMap.put(redisInfoPartArr[0], redisInfoPartList);
+            }
+        }
+        System.out.println(redisInfoMap);
+
+
+        Set<String> keys = redisConnection.getKeys();
+        for (String k : keys) {
+            Map<String, String> map = new HashMap<>();
+            String type = redisConnection.getTypeByKey(k);
+            String encoding = redisConnection.getEncodingByKey(k);
+//            Long refCount = redisConnection.getCountByKey(k);
+            Long idleTime = redisConnection.getIdleTimeByKey(k);
+            Long validTime = redisConnection.getValidTimeByKey(k);
+            map.put("key", k);
+            map.put("encoding", encoding);
+//                    map.put("count", refCount.toString());
+            map.put("idleTime", idleTime.toString() + "s");
+            map.put("validTime", validTime == -1 ? "Forever!" : validTime.toString() + "s");
+
+            switch (type) {
+                case "string":
+                    stringList.add(map);
+                    break;
+                case "list":
+                    listList.add(map);
+                    break;
+                case "hash":
+                    hashList.add(map);
+                    break;
+                default:
+                    System.out.println("未匹配的数据类型--" + type);
+            }
+        }
+        modelMap.addAttribute("stringList", stringList);
+        modelMap.addAttribute("listList", listList);
+        modelMap.addAttribute("hashList", hashList);
+        modelMap.addAttribute("redisInfoMap", redisInfoMap);
+        return "redis_data";
+    }
+
+    @RequestMapping(value = "/redisAdmin")
+    public String redisAdmin(ModelMap modelMap) {
+        return "redis_admin";
+    }
+
+    @RequestMapping(value = "/redisChange")
+    public @ResponseBody
+    Map<String, Object> redisChange(String reqJsonString) {
+        Map<String, Object> resultMap = new HashMap<>();
+        JSONObject jsonObject = JSONObject.parseObject(reqJsonString);
+        Object type = jsonObject.get("typeFlag");
+        Object key = jsonObject.get("key");
+        if (StringUtils.isEmpty(type) || StringUtils.isEmpty(key)) {
+            resultMap.put("returnCode", "1");
+            resultMap.put("message", "数据类型或键名无效！");
+            return resultMap;
+        }
+        switch (type.toString()) {
+            case "string":
+                resultMap.put("string", RedisCommon.getStringByKey(key.toString()));
+                break;
+            case "list":
+                resultMap.put("list", RedisCommon.getListFromRedis(key.toString()));
+                break;
+            case "hash":
+                Object childKey = jsonObject.get("child_key");
+                if (StringUtils.isEmpty(childKey)){
+                    resultMap.put("hash", RedisCommon.getRedisHashAll(key.toString()).toString());
+                }else {
+                    resultMap.put("hash", RedisCommon.getHashFeildValue(key.toString(), childKey.toString()));
+                }
+                break;
+            default:
+                resultMap.put("returnCode", "1");
+                resultMap.put("message", "数据类型未找到！");
+        }
+
+
+        return resultMap;
+    }
+
 }

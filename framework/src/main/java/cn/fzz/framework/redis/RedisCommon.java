@@ -16,12 +16,20 @@ import java.util.*;
  * Desc:
  */
 public class RedisCommon {
-    /**
-     * 根据用户名启动redis服务
-     *
-     * @param username
-     * @return
-     */
+    public static String getStringByKey(String key) {
+        return RedisUtil.getStringByKey(key);
+    }
+
+    public static String getHashFeildValue(String key, String childKey) {
+        return RedisUtil.getHashFeildValue(key, childKey);
+    }
+
+        /**
+         * 根据用户名启动redis服务
+         *
+         * @param username
+         * @return
+         */
     public static Process createRedisProcessByUser(String username) {
         Map<String, String> configMap = RedisUtil.getRedisHashAll(username);
         if (configMap != null) {

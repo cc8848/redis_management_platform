@@ -25,7 +25,117 @@
 <div class="container">
 
   <div class="row">
-
+    <div class="col-sm-4">
+      <table class="table table-striped table-bordered">
+        <caption>String</caption>
+        <thead>
+        <tr>
+          <th>Key</th>
+          <th>Encoding</th>
+          <!--<th>Count</th>-->
+          <th>Idle time</th>
+          <th>Valid time</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!--/*@thymesVar id="stringList" type=""*/-->
+        <tr th:each="collect,iterStat : ${stringList}">
+          <td th:text="${collect['key']}">Key</td>
+          <td th:text="${collect['encoding']}">Encoding</td>
+          <!--<td th:text="${collect['count']}">0</td>-->
+          <td th:text="${collect['idleTime']}">0</td>
+          <td th:text="${collect['validTime']}">0</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col-sm-4">
+      <table class="table table-striped table-bordered">
+        <caption>List</caption>
+        <thead>
+        <tr>
+          <th>Key</th>
+          <th>Encoding</th>
+          <!--<th>Count</th>-->
+          <th>Idle time</th>
+          <th>Valid time</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!--/*@thymesVar id="listList" type=""*/-->
+        <tr th:each="collect,iterStat : ${listList}">
+          <td th:text="${collect['key']}">Key</td>
+          <td th:text="${collect['encoding']}">Encoding</td>
+          <!--<td th:text="${collect['count']}">0</td>-->
+          <td th:text="${collect['idleTime']}">0</td>
+          <td th:text="${collect['validTime']}">0</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col-sm-4">
+      <table class="table table-striped table-bordered">
+        <caption>Hash</caption>
+        <thead>
+        <tr>
+          <th width="50%">Key</th>
+          <th>Encoding</th>
+          <!--<th>Count</th>-->
+          <th>Idle time</th>
+          <th>Valid time</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!--/*@thymesVar id="hashList" type=""*/-->
+        <tr th:each="collect,iterStat : ${hashList}">
+          <td th:text="${collect['key']}">Key</td>
+          <td th:text="${collect['encoding']}">Encoding</td>
+          <!--<td th:text="${collect['count']}">0</td>-->
+          <td th:text="${collect['idleTime']}">0</td>
+          <td th:text="${collect['validTime']}">0</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="row">
+    <table class="table table-striped table-bordered">
+      <caption>Info</caption>
+      <thead>
+      <tr>
+        <th>Clients</th>
+        <th>CPU</th>
+        <th>Memory</th>
+        <th>Others</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <!--/*@thymesVar id="redisInfoMap" type=""*/-->
+        <td>
+          <ul class="list-unstyled">
+            <li th:each="collect,iterStat : ${redisInfoMap['Clients']}" th:text="${collect}">collect</li>
+          </ul>
+        </td>
+        <td>
+          <ul class="list-unstyled">
+            <li th:each="collect,iterStat : ${redisInfoMap['CPU']}" th:text="${collect}">collect</li>
+          </ul>
+        </td>
+        <td>
+          <ul class="list-unstyled">
+            <li th:each="collect,iterStat : ${redisInfoMap['Memory']}" th:text="${collect}">collect</li>
+          </ul>
+        </td>
+        <td>
+          <ul class="list-unstyled">
+            <li th:each="collect,iterStat : ${redisInfoMap['Keyspace']}" th:text="${collect}">collect</li>
+            <li th:each="collect,iterStat : ${redisInfoMap['Replication']}" th:text="${collect}">collect</li>
+          </ul>
+        </td>
+      </tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
