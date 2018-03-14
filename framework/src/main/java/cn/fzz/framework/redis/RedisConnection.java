@@ -118,6 +118,26 @@ public class RedisConnection {
         return null;
     }
 
+    public String getStringByKey(String key){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            String string = jedis.get(key);
+            jedis.close();
+            return string;
+        }
+        return null;
+    }
+
+    public String getHashFeildValue(String key, String childKey){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            String value = jedis.hget(key, childKey);
+            jedis.close();
+            return value;
+        }
+        return null;
+    }
+
     public String getTypeByKey(String key){
         Jedis jedis = getJedis();
         if (jedis != null) {
@@ -257,6 +277,20 @@ public class RedisConnection {
         return null;
     }
 
+    public Boolean setExpire(String key, int seconds){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            if (seconds > 0){
+                jedis.expire(key, seconds);
+            }else {
+                jedis.persist(key);
+            }
+            jedis.close();
+            return true;
+        }
+        return false;
+    }
+
     public Boolean deleteByKey(String key) {
         Jedis jedis = getJedis();
         if (jedis != null) {
@@ -271,6 +305,16 @@ public class RedisConnection {
         Jedis jedis = getJedis();
         if (jedis != null) {
             jedis.lrem(key, 0, value);
+            jedis.close();
+            return true;
+        }
+        return false;
+    }
+
+    public Boolean delHashByFeild(String key, String field){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            jedis.hdel(key, field);
             jedis.close();
             return true;
         }

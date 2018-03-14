@@ -31,9 +31,10 @@
       <div class="form-group">
         <label>Please select redis: </label>
         <label>
-          <select class="form-control">
-            <option>Localhost</option>
-            <option>machine1-NO.1</option>
+          <select class="form-control" id = "taskName">
+            <!--/*@thymesVar id="alreadyList" type=""*/-->
+            <!--/*@thymesVar id="taskName" type=""*/-->
+            <option th:each="collect,iterStat : ${alreadyList}" th:text="${collect}" th:selected="${collect==taskName}">Localhost</option>
           </select>
         </label>
       </div>
@@ -50,13 +51,24 @@
             <input type="text" class="form-control" id="string_key" name="string_key" placeholder="key"/>
           </div>
           <div class="col-sm-4">
-            <button type="button" onclick="find_string()">find</button>
+            <button type="button" class="btn btn-default" onclick="find_string()">find</button>
           </div>
         </div>
         <div class="form-group">
           <label for="string_value" class="col-sm-2 control-label">value</label>
           <div class="col-sm-9">
-            <textarea class="form-control" id="string_value" name="string_value" placeholder="value" rows="8"></textarea>
+            <textarea class="form-control" id="string_value" name="string_value" placeholder="value"
+                      rows="8"></textarea>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-sm-2"></div>
+          <div class="col-sm-4">
+            <button type="button" class="btn btn-default" onclick="change_redis('string')">New or Change</button>
+          </div>
+          <div class="col-sm-2"></div>
+          <div class="col-sm-2">
+            <button type="button" class="btn btn-danger" onclick="delete_redis('string')">Delete</button>
           </div>
         </div>
       </form>
@@ -71,13 +83,23 @@
             <input type="text" class="form-control" id="list_key" name="list_key" placeholder="key"/>
           </div>
           <div class="col-sm-4">
-            <button type="button" onclick="find_list()">find</button>
+            <button type="button" class="btn btn-default" onclick="find_list()">find</button>
           </div>
         </div>
         <div class="form-group">
           <label for="list_value" class="col-sm-2 control-label">value</label>
           <div class="col-sm-9">
             <textarea class="form-control" id="list_value" name="list_value" placeholder="value" rows="8"></textarea>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-sm-2"></div>
+          <div class="col-sm-4">
+            <button type="button" class="btn btn-default" onclick="change_redis('list')">New or Change</button>
+          </div>
+          <div class="col-sm-2"></div>
+          <div class="col-sm-2">
+            <button type="button" class="btn btn-danger" onclick="delete_redis('list')">Delete</button>
           </div>
         </div>
       </form>
@@ -88,14 +110,14 @@
         <h3 align="center">Hash</h3>
         <div class="form-group">
           <label for="hash_key" class="col-sm-2 control-label">key</label>
-          <div class="col-sm-4">
+          <div class="col-sm-5">
             <input type="text" class="form-control" id="hash_key" name="hash_key" placeholder="key"/>
           </div>
           <div class="col-sm-3">
             <input type="text" class="form-control" id="key" name="key" placeholder="key"/>
           </div>
-          <div class="col-sm-3">
-            <button type="button" onclick="find_hash()">find</button>
+          <div class="col-sm-2">
+            <button type="button" class="btn btn-default" onclick="find_hash()">find</button>
           </div>
         </div>
         <div class="form-group">
@@ -104,9 +126,33 @@
             <textarea class="form-control" id="hash_value" name="hash_value" placeholder="value" rows="8"></textarea>
           </div>
         </div>
+        <div class="form-group">
+          <div class="col-sm-2"></div>
+          <div class="col-sm-4">
+            <button type="button" class="btn btn-default" onclick="change_redis('hash')">New or Change</button>
+          </div>
+          <div class="col-sm-2"></div>
+          <div class="col-sm-2">
+            <button type="button" class="btn btn-danger" onclick="delete_redis('hash')">Delete</button>
+          </div>
+        </div>
       </form>
     </div>
-
+  </div>
+  <div class="row">
+    <div class="col-sm-6">
+      <div class="form-group">
+        <div class="col-sm-5">
+          <input type="text" class="form-control" id="redis_key" name="redis_key" placeholder="redis key"/>
+        </div>
+        <div class="col-sm-5">
+          <input type="text" class="form-control" id="valid_time" name="valid_time" placeholder="valid time"/>
+        </div>
+        <div class="col-sm-2">
+          <button type="button" class="btn btn-default" onclick="redis_expire()">change valid time</button>
+        </div>
+      </div>
+    </div>
   </div>
 
 </div>

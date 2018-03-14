@@ -18,6 +18,9 @@
   <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
   <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
   <![endif]-->
+
+  <script type="text/javascript" src="/static/js/redis_common.js"></script>
+
   <title>Redis运行状态</title>
 </head>
 <body>
@@ -39,7 +42,8 @@
       </thead>
       <tbody>
       <!--/*@thymesVar id="processes" type=""*/-->
-      <tr th:each="collect,iterStat : ${processes}">
+      <tr th:each="collect,iterStat : ${processes}"
+          th:onclick="'javascript:linkToDetail(\''+${collect['taskName']}+', 1\')'">
         <td th:text="${collect['taskName']}">Andy</td>
         <td th:text="${collect['state']}">Success</td>
         <td th:text="${collect['version']}">v 1.0</td>

@@ -293,4 +293,41 @@ public class Common {
             }
         }
     }
+
+    /**
+     * 去除字符串中所包含的空格（包括:空格(全角，半角)、制表符、换页符等）
+     * @param s
+     * @return
+     */
+    public static String removeAllBlank(String s){
+        String result = "";
+        if(null!=s && !"".equals(s)){
+            result = s.replaceAll("[　*| *| *|//s*]*", "");
+        }
+        return result;
+    }
+
+    /**
+     * 去除字符串中头部和尾部所包含的空格（包括:空格(全角，半角)、制表符、换页符等）
+     * @param s
+     * @return
+     */
+    public static String trim(String s){
+        String result = "";
+        if(null!=s && !"".equals(s)){
+            result = s.replaceAll("^[　*| *| *|//*]*", "")
+                    .replaceAll("[　*| *| *|//*]*$", "");
+        }
+        return result;
+    }
+
+    /**
+     * 判断是否为整数
+     * @param str 传入的字符串
+     * @return 是整数返回true,否则返回false
+     */
+    public static boolean isInteger(String str) {
+        Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
+        return pattern.matcher(str).matches();
+    }
 }

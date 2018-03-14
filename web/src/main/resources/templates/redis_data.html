@@ -18,14 +18,46 @@
   <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
   <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
   <![endif]-->
+
+  <script type="text/javascript" src="/static/js/redis_common.js"></script>
+
   <!--/*@thymesVar id="taskName" type=""*/-->
   <title th:text="${taskName}">redis task</title>
 </head>
 <body>
 <div class="container">
+  <!--/*@thymesVar id="returnCode" type=""*/-->
+  <input type="hidden" id = "returnCode" th:value="${returnCode}" />
+  <!--/*@thymesVar id="message" type=""*/-->
+  <input type="hidden" id = "message" th:value="${message}" />
 
   <div class="row">
-    <div class="col-sm-4">
+    <form role="form">
+      <div class="form-group">
+        <label>Please select redis: </label>
+        <label>
+          <select class="form-control" onchange="linkToDetail(this.options[this.selectedIndex].text, '0')">
+            <!--/*@thymesVar id="alreadyList" type=""*/-->
+            <!--/*@thymesVar id="taskName" type=""*/-->
+            <option th:each="collect,iterStat : ${alreadyList}" th:text="${collect}" th:selected="${collect==taskName}">Localhost</option>
+          </select>
+        </label>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    if (document.getElementById("returnCode").value !== "0"){
+        alert(document.getElementById("message").value);
+    }
+      // if (window.stop)
+      //     window.stop();
+      // else
+      //     document.execCommand("Stop");
+  </script>
+
+  <div class="row" id = "content">
+    <div class="col-sm-3">
       <table class="table table-striped table-bordered">
         <caption>String</caption>
         <thead>
@@ -73,12 +105,12 @@
         </tbody>
       </table>
     </div>
-    <div class="col-sm-4">
+    <div class="col-sm-5">
       <table class="table table-striped table-bordered">
         <caption>Hash</caption>
         <thead>
         <tr>
-          <th width="50%">Key</th>
+          <th>Key</th>
           <th>Encoding</th>
           <!--<th>Count</th>-->
           <th>Idle time</th>

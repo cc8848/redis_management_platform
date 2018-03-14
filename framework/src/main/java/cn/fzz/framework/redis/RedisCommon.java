@@ -20,16 +20,20 @@ public class RedisCommon {
         return RedisUtil.getStringByKey(key);
     }
 
+    public static Boolean saveString(String key, String value) {
+        return RedisUtil.saveRedisString(key, value);
+    }
+
     public static String getHashFeildValue(String key, String childKey) {
         return RedisUtil.getHashFeildValue(key, childKey);
     }
 
-        /**
-         * 根据用户名启动redis服务
-         *
-         * @param username
-         * @return
-         */
+    /**
+     * 根据用户名启动redis服务
+     *
+     * @param username
+     * @return
+     */
     public static Process createRedisProcessByUser(String username) {
         Map<String, String> configMap = RedisUtil.getRedisHashAll(username);
         if (configMap != null) {
@@ -72,6 +76,7 @@ public class RedisCommon {
 
     /**
      * 更新redis进程状态
+     *
      * @param username
      * @param process
      */
@@ -81,24 +86,25 @@ public class RedisCommon {
         RedisUtil.saveRedisHash(username, map);
     }
 
-    public static Boolean saveRedisHash(String key, Map<String, String> map){
+    public static Boolean saveRedisHash(String key, Map<String, String> map) {
         return RedisUtil.saveRedisHash(key, map);
     }
 
-    public static Map<String, String> getRedisHashAll(String key){
+    public static Map<String, String> getRedisHashAll(String key) {
         return RedisUtil.getRedisHashAll(key);
     }
 
     /**
      * 取出key对应的list
+     *
      * @param key
      * @return
      */
-    public static List<String> getListFromRedis(String key){
+    public static List<String> getListFromRedis(String key) {
         return RedisUtil.getListByKey(key);
     }
 
-    public static Boolean deleteRedisByKey(String key){
+    public static Boolean deleteRedisByKey(String key) {
         return RedisUtil.deleteByKey(key);
     }
 
@@ -106,23 +112,29 @@ public class RedisCommon {
         return RedisUtil.delListByValue(key, value);
     }
 
-        /**
-         * 根据key取出redis中的hash
-         * @param key
-         * @return
-         */
-    public static Map<String, String> getHashFromRedis(String key){
+    public static Boolean delHashByFeild(String key, String feild) {
+        return RedisUtil.delHashByFeild(key, feild);
+    }
+
+    /**
+     * 根据key取出redis中的hash
+     *
+     * @param key
+     * @return
+     */
+    public static Map<String, String> getHashFromRedis(String key) {
         return RedisUtil.getRedisHashAll(key);
     }
 
     /**
      * 查到所有配置了redis服务的用户， 并查到相应的redis服务
+     *
      * @return
      */
-    public static List<Map<String, String>> getProcesses(){
+    public static List<Map<String, String>> getProcesses() {
         List<Map<String, String>> processes = new ArrayList<>();
         List<String> tasks = getListFromRedis("alreadyList");
-        for (String string:tasks){
+        for (String string : tasks) {
             Map<String, String> map = RedisUtil.getRedisHashAll(string + "State");
             if (map != null) {
                 map.put("taskName", string);
@@ -186,16 +198,57 @@ public class RedisCommon {
         }
     }
 
-    public static Boolean saveRedisList(String key, String value){
+    public static Boolean saveRedisList(String key, String value) {
         return RedisUtil.saveRedisList(key, value);
     }
 
-    public static void killRedisTaskByName(String redisTaskName){
-        Map redisTaskStateMap = getRedisHashAll(redisTaskName+"State");
-        if (redisTaskStateMap.size()>0){
+    public static void killRedisTaskByName(String redisTaskName) {
+        Map redisTaskStateMap = getRedisHashAll(redisTaskName + "State");
+        if (redisTaskStateMap.size() > 0) {
             int port = Integer.parseInt(redisTaskStateMap.get("port").toString());
             Common.killProcessByPort(port);
             RedisCommon.delListByValue("alreadyList", redisTaskName);
         }
+    }
+
+    public static Boolean setExpire(String key, int seconds) {
+        return RedisUtil.setExpire(key, seconds);
+    }
+
+    public static Boolean isInRedis(String key) {
+        Set<String> keys = RedisUtil.getKeys();
+        return !StringUtils.isEmpty(keys) && keys.contains(key);
+    }
+
+    public static Map<String, Object> getServiceByName(String taskName) {
+        Map<String, Object> returnMap = new HashMap<>();
+
+        String returnCode = "0";
+        String returnMessage = "";
+        int port = 6379;
+        if (!RedisCommon.getListFromRedis("alreadyList").contains(taskName)) {
+            returnCode = "1";
+            returnMessage = "未找到代号为" + taskName + "的服务！";
+        } else {
+            Map map = RedisCommon.getHashFromRedis(taskName + "State");
+            Object portObj = StringUtils.isEmpty(map) ? null : map.get("port");
+            if (StringUtils.isEmpty(portObj) || !Common.isInteger(portObj.toString())) {
+                returnCode = "1";
+                returnMessage = "系统异常，" + taskName + "的服务器信息未找到！";
+            } else {
+                port = Integer.parseInt(portObj.toString());
+            }
+        }
+        RedisConnection redisConnection = new RedisConnection(port);
+        if (!redisConnection.ping().equals("PONG")) {
+            returnCode = "1";
+            returnMessage = "Sorry！代号为" + taskName + "的服务未能连通！， 请先确认该服务已启动！";
+        }
+
+        returnMap.put("returnCode", returnCode);
+        returnMap.put("returnMessage", returnMessage);
+        returnMap.put("redisConnection", redisConnection);
+
+        return returnMap;
     }
 }

@@ -6,6 +6,7 @@ import redis.clients.jedis.JedisPoolConfig;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public final class RedisUtil {
 
@@ -79,6 +80,16 @@ public final class RedisUtil {
         if (jedis != null) {
             jedis.close();
         }
+    }
+
+    public static Set<String> getKeys(){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            Set<String> keys = jedis.keys("*");
+            jedis.close();
+            return keys;
+        }
+        return null;
     }
 
     public static String getStringByKey(String key){
@@ -206,6 +217,30 @@ public final class RedisUtil {
         Jedis jedis = getJedis();
         if (jedis != null){
             jedis.lrem(key, 0, value);
+            jedis.close();
+            return true;
+        }
+        return false;
+    }
+
+    public static Boolean delHashByFeild(String key, String field){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            jedis.hdel(key, field);
+            jedis.close();
+            return true;
+        }
+        return false;
+    }
+
+    public static Boolean setExpire(String key, int seconds){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            if (seconds == -1){
+                jedis.persist(key);
+            }else {
+                jedis.expire(key, seconds);
+            }
             jedis.close();
             return true;
         }
