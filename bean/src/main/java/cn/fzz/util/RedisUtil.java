@@ -4,6 +4,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,7 +30,7 @@ public final class RedisUtil {
     //等待可用连接的最大时间，单位毫秒，默认值为-1，表示永不超时。如果超过等待时间，则直接抛出JedisConnectionException；
     private static int MAX_WAIT = 1000;
 
-    private static int TIMEOUT = 1000;
+    private static int TIMEOUT = 100000;
 
     //在borrow一个jedis实例时，是否提前进行validate操作；如果为true，则得到的jedis实例均是可用的；
     private static boolean TEST_ON_BORROW = true;
@@ -51,7 +52,8 @@ public final class RedisUtil {
             config.setMaxWaitMillis(MAX_WAIT);
             config.setTestOnBorrow(TEST_ON_BORROW);
             jedisPool = new JedisPool(config, ADDR, PORT, TIMEOUT); //jedisPool = new JedisPool(config, ADDR, PORT, TIMEOUT, AUTH);
-
+            flushAll();
+            initLocalhost();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -245,5 +247,56 @@ public final class RedisUtil {
             return true;
         }
         return false;
+    }
+
+    public static Boolean hExists(String key, String field){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            Boolean isExists = jedis.hexists(key, field);
+            jedis.close();
+            return isExists;
+        }
+        return false;
+    }
+
+    public static Long hDel(String key, String field){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            Long result = jedis.hdel(key, field);
+            jedis.close();
+            return result;
+        }
+        return 0L;
+    }
+
+    public static String hGet(String key, String field){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            String result = jedis.hget(key, field);
+            jedis.close();
+            return result;
+        }
+        return null;
+    }
+
+    private static void flushAll(){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            jedis.flushAll();
+            jedis.close();
+        }
+    }
+
+    private static void initLocalhost(){
+        Map<String, String> localhost = new HashMap<>();
+        localhost.put("port", "6379");
+        localhost.put("version", "v3.2.100");
+        localhost.put("time", "1521002602005");
+        localhost.put("redisSoftwarePath", "../redis/redis-server.exe");
+        localhost.put("redisConfigPath", "web/src/main/resources/configs/redis6379.conf");
+        saveRedisHash("localhost", localhost);
+        saveRedisHash("localhostState", localhost);
+        saveRedisList("machineList", "machine1");
+        saveRedisList("alreadyList", "localhost");
     }
 }

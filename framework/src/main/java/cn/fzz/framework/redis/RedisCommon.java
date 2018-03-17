@@ -29,22 +29,6 @@ public class RedisCommon {
     }
 
     /**
-     * 根据用户名启动redis服务
-     *
-     * @param username
-     * @return
-     */
-    public static Process createRedisProcessByUser(String username) {
-        Map<String, String> configMap = RedisUtil.getRedisHashAll(username);
-        if (configMap != null) {
-            String redisSoftwarePath = configMap.get("redisSoftwarePath");
-            String redisConfigPath = configMap.get("redisConfigPath");
-            return Common.createProcess(redisSoftwarePath, redisConfigPath);
-        }
-        return null;
-    }
-
-    /**
      * 保存Redis程序信息
      *
      * @param redisInfoMap
@@ -202,12 +186,14 @@ public class RedisCommon {
         return RedisUtil.saveRedisList(key, value);
     }
 
-    public static void killRedisTaskByName(String redisTaskName) {
+    public static void killRedisTaskByName(String redisTaskName, Boolean isNeedDel) {
         Map redisTaskStateMap = getRedisHashAll(redisTaskName + "State");
         if (redisTaskStateMap.size() > 0) {
             int port = Integer.parseInt(redisTaskStateMap.get("port").toString());
             Common.killProcessByPort(port);
-            RedisCommon.delListByValue("alreadyList", redisTaskName);
+            if (isNeedDel) {
+                RedisCommon.delListByValue("alreadyList", redisTaskName);
+            }
         }
     }
 
@@ -220,9 +206,41 @@ public class RedisCommon {
         return !StringUtils.isEmpty(keys) && keys.contains(key);
     }
 
-    public static Map<String, Object> getServiceByName(String taskName) {
+    public static Map<String, Object> getServiceByName(Object taskNameObj) {
         Map<String, Object> returnMap = new HashMap<>();
 
+        Map<String, Object> serviceInfo = getInfoByName(taskNameObj);
+        if (!serviceInfo.get("returnCode").equals("0")) {
+            return serviceInfo;
+        }
+
+        String taskName = taskNameObj.toString();
+        String returnCode = serviceInfo.get("returnCode").toString();
+        String returnMessage = serviceInfo.get("returnMessage").toString();
+        int port = (int) serviceInfo.get("port");
+
+        RedisConnection redisConnection = new RedisConnection(port);
+        if (!redisConnection.ping().equals("PONG")) {
+            returnCode = "1";
+            returnMessage = "Sorry！代号为" + taskName + "的服务未能连通！， 请先确认该服务已启动！";
+        } else {
+            returnMap.put("redisConnection", redisConnection);
+        }
+
+        returnMap.put("returnCode", returnCode);
+        returnMap.put("returnMessage", returnMessage);
+
+        return returnMap;
+    }
+
+    public static Map<String, Object> getInfoByName(Object taskNameObj) {
+        Map<String, Object> returnMap = new HashMap<>();
+        if (StringUtils.isEmpty(taskNameObj)) {
+            returnMap.put("returnCode", "1");
+            returnMap.put("returnMessage", "Task name is null !");
+            return returnMap;
+        }
+        String taskName = taskNameObj.toString();
         String returnCode = "0";
         String returnMessage = "";
         int port = 6379;
@@ -239,16 +257,22 @@ public class RedisCommon {
                 port = Integer.parseInt(portObj.toString());
             }
         }
-        RedisConnection redisConnection = new RedisConnection(port);
-        if (!redisConnection.ping().equals("PONG")) {
-            returnCode = "1";
-            returnMessage = "Sorry！代号为" + taskName + "的服务未能连通！， 请先确认该服务已启动！";
-        }
 
+        returnMap.put("port", port);
         returnMap.put("returnCode", returnCode);
         returnMap.put("returnMessage", returnMessage);
-        returnMap.put("redisConnection", redisConnection);
-
         return returnMap;
+    }
+
+    public static Boolean hExists(String key, String field) {
+        return RedisUtil.hExists(key, field);
+    }
+
+    public static String hGet(String key, String field) {
+        return RedisUtil.hGet(key, field);
+    }
+
+    public static Long hDel(String key, String field) {
+        return RedisUtil.hDel(key, field);
     }
 }

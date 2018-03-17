@@ -1,3 +1,29 @@
+//Control switch
+var t = 1;
+function control_switch(task_name, directive) {
+    var requestMap = {};
+    requestMap.taskName = task_name;
+    requestMap.directive = directive;
+
+    $.ajax({
+        url: "http://localhost:9090/redis/redisControlSwitch",
+        type: 'POST',
+        data: {
+            reqJsonString: JSON.stringify(requestMap),
+        },
+        dataType: 'json',
+        success: function (data) {
+            if (data['returnCode'] === "0") {
+                alert("success!");
+            } else{
+                alert("fail: " + data['message']);
+            }
+            document.getElementById("State").innerText = data['state'];
+        }
+    })
+}
+
+
 //跳转到详细信息页面
 function linkToDetail(taskName) {
     var requestMap = {};
@@ -16,3 +42,4 @@ function linkToDetail(taskName) {
     tempForm.submit();
     return tempForm;
 }
+

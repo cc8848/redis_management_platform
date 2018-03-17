@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
  */
 public class Common {
     //记录当前已使用的端口号
-    private static List<Integer> portList = new ArrayList<>();
+    private static final List<Integer> portList = new ArrayList<>();
     private static int port = 6380;
 
     /**
@@ -29,15 +29,20 @@ public class Common {
      * @return
      */
     public static Integer checkPort(Object object) {
+        System.out.println(object);
         if (StringUtils.isEmpty(object)) {  //如果未传入端口号， 则自动生成
+            System.out.println("if");
             List<String> readPort;
-            do {
-                while (portList.indexOf(port) >= 0) {
-                    port++;
-                }
-                readPort = netstat_anoByPort(port);
-                portList.add(port);
-            }while (readPort != null && readPort.size() != 0);
+            synchronized(portList) {
+                do {
+                    while (portList.indexOf(port) >= 0) {
+                        System.out.println(portList + "\n" + port);
+                        port++;
+                    }
+                    readPort = netstat_anoByPort(port);
+                    portList.add(port);
+                } while (readPort != null && readPort.size() != 0);
+            }
         } else {
             port = Integer.parseInt(object.toString());
             List<String> readPort = netstat_anoByPort(port);

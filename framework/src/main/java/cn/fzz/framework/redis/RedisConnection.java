@@ -32,9 +32,9 @@ public class RedisConnection {
     private int max_idle = 200;
 
     //等待可用连接的最大时间，单位毫秒，默认值为-1，表示永不超时。如果超过等待时间，则直接抛出JedisConnectionException；
-    private int max_wait = 10;
+    private int max_wait = 100;
 
-    private int timeout = 10;
+    private int timeout = 100;
 
     //在borrow一个jedis实例时，是否提前进行validate操作；如果为true，则得到的jedis实例均是可用的；
     private boolean test_on_borrow = true;

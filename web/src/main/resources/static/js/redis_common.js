@@ -1,7 +1,7 @@
 //跳转到详细信息页面
-function linkToDetail(taskName, ifOpenNew) {
+function linkToDetail(task_name, ifOpenNew) {
     var requestMap = {};
-    requestMap.taskName = taskName;
+    requestMap.taskName = task_name;
 
     var tempForm = document.createElement("form");
     tempForm.action = "http://localhost:9090/redis/redisData";
@@ -12,9 +12,10 @@ function linkToDetail(taskName, ifOpenNew) {
     }
     var dict = document.createElement("input");
     dict.name = "taskName";
-    dict.value = taskName;
+    dict.value = task_name;
     tempForm.appendChild(dict);
     document.body.appendChild(tempForm);
     tempForm.submit();
     return tempForm;
 }
+

@@ -163,7 +163,7 @@ public class RedisController {
         List<Map> hashList = new ArrayList<>();
         Map<String, List> redisInfoMap = new HashMap<>();
 
-        String taskName = StringUtils.isEmpty(reqMap.get("taskName"))?"localhost":reqMap.get("taskName");
+        String taskName = StringUtils.isEmpty(reqMap.get("taskName")) ? "localhost" : reqMap.get("taskName");
         Map<String, Object> redisServiceMap = RedisCommon.getServiceByName(taskName);
         String returnCode = redisServiceMap.get("returnCode").toString();
         String message = redisServiceMap.get("returnMessage").toString();
@@ -251,8 +251,8 @@ public class RedisController {
             return resultMap;
         }
 
-        String taskName = StringUtils.isEmpty(jsonObject.get("taskName"))?
-                "localhost":jsonObject.get("taskName").toString();
+        String taskName = StringUtils.isEmpty(jsonObject.get("taskName")) ?
+                "localhost" : jsonObject.get("taskName").toString();
         Map<String, Object> redisServiceMap = RedisCommon.getServiceByName(taskName);
         String returnCode = redisServiceMap.get("returnCode").toString();
         String message = redisServiceMap.get("returnMessage").toString();
@@ -285,7 +285,7 @@ public class RedisController {
                     break;
                 default:
                     returnCode = "1";
-                    message =  "数据类型未找到！";
+                    message = "数据类型未找到！";
             }
         }
 
@@ -309,8 +309,8 @@ public class RedisController {
             return resultMap;
         }
 
-        String taskName = StringUtils.isEmpty(jsonObject.get("taskName"))?
-                "localhost":jsonObject.get("taskName").toString();
+        String taskName = StringUtils.isEmpty(jsonObject.get("taskName")) ?
+                "localhost" : jsonObject.get("taskName").toString();
         Map<String, Object> redisServiceMap = RedisCommon.getServiceByName(taskName);
         String returnCode = redisServiceMap.get("returnCode").toString();
         String message = redisServiceMap.get("returnMessage").toString();
@@ -380,8 +380,8 @@ public class RedisController {
             return resultMap;
         }
 
-        String taskName = StringUtils.isEmpty(jsonObject.get("taskName"))?
-                "localhost":jsonObject.get("taskName").toString();
+        String taskName = StringUtils.isEmpty(jsonObject.get("taskName")) ?
+                "localhost" : jsonObject.get("taskName").toString();
         Map<String, Object> redisServiceMap = RedisCommon.getServiceByName(taskName);
         String returnCode = redisServiceMap.get("returnCode").toString();
         String message = redisServiceMap.get("returnMessage").toString();
@@ -427,8 +427,8 @@ public class RedisController {
             return resultMap;
         }
 
-        String taskName = StringUtils.isEmpty(jsonObject.get("taskName"))?
-                "localhost":jsonObject.get("taskName").toString();
+        String taskName = StringUtils.isEmpty(jsonObject.get("taskName")) ?
+                "localhost" : jsonObject.get("taskName").toString();
         Map<String, Object> redisServiceMap = RedisCommon.getServiceByName(taskName);
         String returnCode = redisServiceMap.get("returnCode").toString();
         String message = redisServiceMap.get("returnMessage").toString();
@@ -436,12 +436,82 @@ public class RedisController {
         if (returnCode.equals("0")) {
             RedisConnection redisConnection = (RedisConnection) redisServiceMap.get("redisConnection");
             returnCode = redisConnection.setExpire(key.toString(), Integer.parseInt(validTime.toString())) ? "0" : "1";
-            if (!returnCode.equals("0")){
+            if (!returnCode.equals("0")) {
                 message = "未知原因导致设置失败！";
             }
         }
         resultMap.put("returnCode", returnCode);
         resultMap.put("message", message);
+        return resultMap;
+    }
+
+    @RequestMapping(value = "/redisControlSwitch")
+    public @ResponseBody
+    Map<String, Object> redisControlSwitch(String reqJsonString) {
+        Map<String, Object> resultMap = new HashMap<>();
+        JSONObject jsonObject = JSONObject.parseObject(reqJsonString);
+        Object taskName = jsonObject.get("taskName");
+        Object directive = jsonObject.get("directive");
+        if (StringUtils.isEmpty(directive)) {
+            resultMap.put("returnCode", "1");
+            resultMap.put("returnMessage", "Directive is null !");
+            return resultMap;
+        }
+        Map<String, Object> infoMap = RedisCommon.getInfoByName(taskName);
+        if (!infoMap.get("returnCode").equals("0")) {
+            return infoMap;
+        }
+
+        switch (directive.toString()) {
+            case "start":
+                RedisCommon.saveRedisList(taskName.toString().split("-NO.")[0] + "RestartList", taskName.toString());
+                break;
+            case "stop":
+                RedisCommon.saveRedisList(taskName.toString().split("-NO.")[0] + "StopList", taskName.toString());
+                break;
+            default:
+                resultMap.put("returnCode", "1");
+                resultMap.put("returnMessage", "Directive is wrong !");
+                return resultMap;
+        }
+
+        String returnCode = "0";
+        String returnMessage = "";
+        Long time = System.currentTimeMillis();
+        while (!RedisCommon.hExists("switchResultHash", taskName.toString())) {
+            if (System.currentTimeMillis() - time > 3000) {
+                System.out.println("获取返回结果超时！");
+                returnCode = "1";
+                returnMessage = "Timeout !";
+                break;
+            }
+            System.out.println("正在等待服务器" + taskName.toString() + "的返回结果...");
+
+            try {
+                //睡3秒
+                Thread.sleep(300);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        if (returnCode.equals("0")) {
+            returnCode = RedisCommon.hGet("switchResultHash", taskName.toString());
+            switch (returnCode) {
+                case "0":
+                    returnMessage = "success!";
+                    break;
+                case "1":
+                    returnMessage = "error!";
+                    break;
+                default:
+                    returnMessage = "未知错误!";
+            }
+        }
+        resultMap.put("returnCode", returnCode);
+        resultMap.put("returnMessage", returnMessage);
+        resultMap.put("state", new RedisConnection(Integer.parseInt(infoMap.get("port").toString()))
+                .ping().equals("PONG") ? "success" : "fail");
         return resultMap;
     }
 }

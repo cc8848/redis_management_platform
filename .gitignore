@@ -22,3 +22,6 @@ conf_dev
 
 # GIT
 # .gitignore
+
+# DataBase
+*.rdb

@@ -20,6 +20,7 @@
   <![endif]-->
 
   <script type="text/javascript" src="/static/js/redis_common.js"></script>
+  <script type="text/javascript" src="/static/js/redis_state.js"></script>
 
   <title>Redis运行状态</title>
 </head>
@@ -38,18 +39,26 @@
         <th>Duration</th>
         <th>Software Path</th>
         <th>Config Path</th>
+        <th>Switch</th>
       </tr>
       </thead>
       <tbody>
       <!--/*@thymesVar id="processes" type=""*/-->
-      <tr th:each="collect,iterStat : ${processes}"
-          th:onclick="'javascript:linkToDetail(\''+${collect['taskName']}+', 1\')'">
-        <td th:text="${collect['taskName']}">Andy</td>
-        <td th:text="${collect['state']}">Success</td>
+      <tr th:each="collect,iterStat : ${processes}">
+          <!--th:onclick="'javascript:linkToDetail(\''+${collect['taskName']}+'\', \'1\')'"-->
+        <td th:text="${collect['taskName']}" th:onclick="'javascript:linkToDetail(\''+${collect['taskName']}+
+        '\', \'1\')'">Andy</td>
+        <td th:text="${collect['state']}" th:id = "State">Success</td>
         <td th:text="${collect['version']}">v 1.0</td>
         <td th:text="${collect['duration']}">1 hour</td>
         <td th:text="${collect['redisSoftwarePath']}">Software Path</td>
         <td th:text="${collect['redisConfigPath']}">Config Path</td>
+        <td>
+          <button th:onclick="'javascript:control_switch(\''+${collect['taskName']} + '\', \'start\')'">start/restart
+          </button>
+          <button th:onclick="'javascript:control_switch(\''+${collect['taskName']} + '\', \'stop\')'">stop
+          </button>
+        </td>
       </tr>
 
       <tr>
