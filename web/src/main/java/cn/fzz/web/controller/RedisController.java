@@ -178,7 +178,6 @@ public class RedisController {
                 if (redisInfoPartArr.length > 1) {
                     List<String> redisInfoPartList = new ArrayList<>(Arrays.asList(redisInfoPartArr)
                             .subList(1, redisInfoPartArr.length));
-
                     redisInfoMap.put(redisInfoPartArr[0], redisInfoPartList);
                 }
             }
@@ -513,5 +512,10 @@ public class RedisController {
         resultMap.put("state", new RedisConnection(Integer.parseInt(infoMap.get("port").toString()))
                 .ping().equals("PONG") ? "success" : "fail");
         return resultMap;
+    }
+
+    @RequestMapping(value = "/redisCPU")
+    public String redisCPU(ModelMap modelMap) {
+        return "redis_cpu";
     }
 }
