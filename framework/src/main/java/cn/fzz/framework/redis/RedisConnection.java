@@ -311,7 +311,7 @@ public class RedisConnection {
         return false;
     }
 
-    public Boolean delHashByFeild(String key, String field){
+    public Boolean delHashByField(String key, String field){
         Jedis jedis = getJedis();
         if (jedis != null){
             jedis.hdel(key, field);
@@ -319,5 +319,25 @@ public class RedisConnection {
             return true;
         }
         return false;
+    }
+
+    public Long getListLen(String key){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            Long length = jedis.llen(key);
+            jedis.close();
+            return length;
+        }
+        return null;
+    }
+
+    public Long getHashCount(String key){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            Long count = jedis.hlen(key);
+            jedis.close();
+            return count;
+        }
+        return null;
     }
 }

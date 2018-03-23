@@ -6,7 +6,7 @@ function control_switch(task_name, directive) {
     requestMap.directive = directive;
 
     $.ajax({
-        url: "http://localhost:9090/redis/redisControlSwitch",
+        url: "http://localhost:9090/redis/controlSwitch",
         type: 'POST',
         data: {
             reqJsonString: JSON.stringify(requestMap),
@@ -30,7 +30,7 @@ function linkToDetail(taskName) {
     requestMap.taskName = taskName;
 
     var tempForm = document.createElement("form");
-    tempForm.action = "http://localhost:9090/redis/redisData";
+    tempForm.action = "http://localhost:9090/redis/data";
     tempForm.method = "post";
     tempForm.style.display = "none";
     tempForm.target = "_blank";

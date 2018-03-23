@@ -3,7 +3,9 @@ package cn.fzz.thread;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import cn.fzz.bean.RedisDangerousEvent;
 import cn.fzz.bean.RedisInfoCPU;
+import cn.fzz.bean.RedisInfoClients;
 import cn.fzz.bean.RedisInfoMemory;
 import cn.fzz.framework.common.Common;
 import cn.fzz.framework.redis.RedisCommon;
@@ -184,6 +186,7 @@ public class Monitor extends Thread {
                     RedisConnection redisConnection = (RedisConnection) redisServiceMap.get("redisConnection");
                     RedisInfoCPU redisInfoCPU = new RedisInfoCPU();
                     RedisInfoMemory redisInfoMemory = new RedisInfoMemory();
+                    RedisInfoClients redisInfoClients = new RedisInfoClients();
                     String redisInfoStr = redisConnection.getInfo().replace("\r", "");
                     String[] redisInfoArr = redisInfoStr.split("# ");
                     for (String string : redisInfoArr) {    //循环取出info里面的每个模块
@@ -247,21 +250,23 @@ public class Monitor extends Thread {
                                                 break;
                                             case "used_memory_human":
                                                 redisInfoMemory.setUsed_memory_human(Float.parseFloat(
-                                                        keyAndValue.length > 1 ?
-                                                                keyAndValue[1].replace("K", "") :
-                                                                "0"));
+                                                        keyAndValue.length > 1 ? keyAndValue[1].substring(0,
+                                                                keyAndValue[1].length() - 1) : "0"));
+                                                break;
+                                            case "used_memory_rss_human":
+                                                redisInfoMemory.setUsed_memory_rss_human(Float.parseFloat(
+                                                        keyAndValue.length > 1 ? keyAndValue[1].substring(0,
+                                                                keyAndValue[1].length() - 1) : "0"));
                                                 break;
                                             case "used_memory_peak_human":
                                                 redisInfoMemory.setUsed_memory_peak_human(Float.parseFloat(
-                                                        keyAndValue.length > 1 ?
-                                                                keyAndValue[1].replace("K", "") :
-                                                                "0"));
+                                                        keyAndValue.length > 1 ? keyAndValue[1].substring(0,
+                                                                keyAndValue[1].length() - 1) : "0"));
                                                 break;
                                             case "used_memory_lua_human":
                                                 redisInfoMemory.setUsed_memory_lua_human(Float.parseFloat(
-                                                        keyAndValue.length > 1 ?
-                                                                keyAndValue[1].replace("K", "") :
-                                                                "0"));
+                                                        keyAndValue.length > 1 ? keyAndValue[1].substring(0,
+                                                                keyAndValue[1].length() - 1) : "0"));
                                                 break;
                                             case "mem_fragmentation_ratio":
                                                 redisInfoMemory.setMem_fragmentation_ratio(Float.parseFloat(
@@ -274,6 +279,33 @@ public class Monitor extends Thread {
                                         }
                                     }
                                     break;
+                                case "Clients":
+                                    for (int i = 1; i < redisInfoPartArr.length; i++) {
+                                        if (StringUtils.isEmpty(redisInfoPartArr[i])) {
+                                            continue;
+                                        }
+                                        keyAndValue = redisInfoPartArr[i].split(":", 2);
+                                        redisInfoClients.setTask_name(taskName);
+                                        switch (keyAndValue[0]) {
+                                            case "connected_clients":
+                                                redisInfoClients.setConnected_clients(Integer.parseInt(
+                                                        keyAndValue.length > 1 ? keyAndValue[1] : "0"));
+                                                break;
+                                            case "blocked_clients":
+                                                redisInfoClients.setBlocked_clients(Integer.parseInt(
+                                                        keyAndValue.length > 1 ? keyAndValue[1] : "0"));
+                                                break;
+                                            case "client_longest_input_buf":
+                                                redisInfoClients.setClient_longest_input_buf(Integer.parseInt(
+                                                        keyAndValue.length > 1 ? keyAndValue[1] : "0"));
+                                                break;
+                                            case "client_longest_output_list":
+                                                redisInfoClients.setClient_longest_output_list(Integer.parseInt(
+                                                        keyAndValue.length > 1 ? keyAndValue[1] : "0"));
+                                                break;
+                                        }
+                                    }
+                                    break;
                                 default:
                             }
                         }
@@ -281,6 +313,20 @@ public class Monitor extends Thread {
                     timeString = dateString;
                     redisLogService.saveCPU(redisInfoCPU);
                     redisLogService.saveMemory(redisInfoMemory);
+                    redisLogService.saveClients(redisInfoClients);
+                    RedisDangerousEvent redisDangerousEvent = new RedisDangerousEvent();
+                    if (redisInfoCPU.getUsed_cpu_sys()>1){
+                        redisDangerousEvent.setType("cpu");
+                        redisDangerousEvent.setEvent_name("cpu报警");
+                        redisDangerousEvent.setMessage(redisInfoStr);
+                        redisLogService.saveEvent(redisDangerousEvent);
+                    }
+                    if (redisInfoMemory.getUsed_memory_human()>1024){
+                        redisDangerousEvent.setType("memory");
+                        redisDangerousEvent.setEvent_name("内存报警");
+                        redisDangerousEvent.setMessage(redisInfoStr);
+                        redisLogService.saveEvent(redisDangerousEvent);
+                    }
                 }
             }
         }

@@ -6,7 +6,7 @@ function find_string() {
     requestMap.key = $("#string_key").val();
 
     $.ajax({
-        url: "http://localhost:9090/redis/redisFind",
+        url: "http://localhost:9090/redis/find",
         type: 'POST',
         data: {
             reqJsonString: JSON.stringify(requestMap),
@@ -29,7 +29,7 @@ function find_list() {
     requestMap.key = $("#list_key").val();
 
     $.ajax({
-        url: "http://localhost:9090/redis/redisFind",
+        url: "http://localhost:9090/redis/find",
         type: 'POST',
         data: {
             reqJsonString: JSON.stringify(requestMap),
@@ -50,7 +50,7 @@ function find_hash() {
     requestMap.child_key = $("#key").val();
 
     $.ajax({
-        url: "http://localhost:9090/redis/redisFind",
+        url: "http://localhost:9090/redis/find",
         type: 'POST',
         data: {
             reqJsonString: JSON.stringify(requestMap),
@@ -72,7 +72,7 @@ function change_redis(typeFlag) {
     requestMap.value = $("#" + typeFlag + "_value").val();
 
     $.ajax({
-        url: "http://localhost:9090/redis/redisChange",
+        url: "http://localhost:9090/redis/change",
         type: 'POST',
         data: {
             reqJsonString: JSON.stringify(requestMap),
@@ -93,7 +93,7 @@ function delete_redis(typeFlag) {
     requestMap.child_key = $("#key").val();
 
     $.ajax({
-        url: "http://localhost:9090/redis/redisDelete",
+        url: "http://localhost:9090/redis/delete",
         type: 'POST',
         data: {
             reqJsonString: JSON.stringify(requestMap),
@@ -113,7 +113,7 @@ function redis_expire(typeFlag) {
     requestMap.key = $("#redis_key").val();
 
     $.ajax({
-        url: "http://localhost:9090/redis/redisExpire",
+        url: "http://localhost:9090/redis/expire",
         type: 'POST',
         data: {
             reqJsonString: JSON.stringify(requestMap),

@@ -1,9 +1,13 @@
 package cn.fzz.web.controller;
 
+import cn.fzz.bean.RedisInfoCPU;
+import cn.fzz.bean.RedisInfoClients;
+import cn.fzz.bean.RedisInfoMemory;
 import cn.fzz.framework.common.Common;
 import cn.fzz.framework.redis.RedisCommon;
 import cn.fzz.framework.redis.RedisConnection;
 
+import cn.fzz.service.RedisLogService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.StringUtils;
@@ -20,10 +24,15 @@ import java.util.*;
 @Controller
 @RequestMapping("/redis")
 public class RedisController {
+    private final RedisLogService redisLogService;
 
-    @RequestMapping(value = "/redisConf")
-    public String createRedisConfig(@RequestParam Map<String, String> reqMap, ModelMap modelMap,
-                                    HttpServletRequest request) {
+    public RedisController(RedisLogService redisLogService) {
+        this.redisLogService = redisLogService;
+    }
+
+    @RequestMapping(value = "/config")
+    public String config(@RequestParam Map<String, String> reqMap, ModelMap modelMap,
+                         HttpServletRequest request) {
         if (!"GET".equals(request.getMethod())) {
             Map<String, String> redisConf = new HashMap<>();
 
@@ -155,8 +164,8 @@ public class RedisController {
         return "redis_state";
     }
 
-    @RequestMapping(value = "/redisData")
-    public String redisData(@RequestParam Map<String, String> reqMap, ModelMap modelMap) {
+    @RequestMapping(value = "/data_back")
+    public String data_back(@RequestParam Map<String, String> reqMap, ModelMap modelMap) {
         List<String> alreadyList = RedisCommon.getListFromRedis("alreadyList");
         List<Map> stringList = new ArrayList<>();
         List<Map> listList = new ArrayList<>();
@@ -219,11 +228,192 @@ public class RedisController {
         modelMap.addAttribute("redisInfoMap", redisInfoMap);
         modelMap.addAttribute("returnCode", returnCode);
         modelMap.addAttribute("message", message);
-        return "redis_data";
+        return "redis_data_back";
     }
 
-    @RequestMapping(value = "/redisAdmin")
-    public String redisAdmin(ModelMap modelMap) {
+    @RequestMapping(value = "/stringData")
+    public String stringData(@RequestParam Map<String, String> reqMap, ModelMap modelMap) {
+        List<String> alreadyList = RedisCommon.getListFromRedis("alreadyList");
+        List<Map> stringList = new ArrayList<>();
+        String taskName = StringUtils.isEmpty(reqMap.get("taskName")) ? "localhost" : reqMap.get("taskName");
+        Map<String, Object> redisServiceMap = RedisCommon.getServiceByName(taskName);
+        String returnCode = redisServiceMap.get("returnCode").toString();
+        String message = redisServiceMap.get("returnMessage").toString();
+
+        if (returnCode.equals("0")) {
+            RedisConnection redisConnection = (RedisConnection) redisServiceMap.get("redisConnection");
+
+            Set<String> keys = redisConnection.getKeys();
+            for (String k : keys) {
+                Map<String, String> map = new HashMap<>();
+                String type = redisConnection.getTypeByKey(k);
+                if (type.equals("string")) {
+                    String encoding = redisConnection.getEncodingByKey(k);
+//            Long refCount = redisConnection.getCountByKey(k);
+                    Long idleTime = redisConnection.getIdleTimeByKey(k);
+                    Long validTime = redisConnection.getValidTimeByKey(k);
+                    map.put("key", k);
+                    map.put("encoding", encoding);
+//                    map.put("count", refCount.toString());
+                    map.put("idleTime", idleTime.toString() + "s");
+                    map.put("validTime", validTime == -1 ? "Forever!" : validTime.toString() + "s");
+                    stringList.add(map);
+                }
+            }
+        }
+        modelMap.addAttribute("taskName", taskName);
+        modelMap.addAttribute("alreadyList", alreadyList);
+        modelMap.addAttribute("stringList", stringList);
+        modelMap.addAttribute("returnCode", returnCode);
+        modelMap.addAttribute("message", message);
+        modelMap.addAttribute("pageCount", stringList.size() / 10 + 1);
+        modelMap.addAttribute("page", StringUtils.isEmpty(reqMap.get("page")) ?
+                1 : Integer.parseInt(reqMap.get("page")));
+        return "redis_string_data";
+    }
+
+    @RequestMapping(value = "/listData")
+    public String listData(@RequestParam Map<String, String> reqMap, ModelMap modelMap) {
+        List<String> alreadyList = RedisCommon.getListFromRedis("alreadyList");
+        List<Map> stringList = new ArrayList<>();
+        String taskName = StringUtils.isEmpty(reqMap.get("taskName")) ? "localhost" : reqMap.get("taskName");
+        Map<String, Object> redisServiceMap = RedisCommon.getServiceByName(taskName);
+        String returnCode = redisServiceMap.get("returnCode").toString();
+        String message = redisServiceMap.get("returnMessage").toString();
+
+        if (returnCode.equals("0")) {
+            RedisConnection redisConnection = (RedisConnection) redisServiceMap.get("redisConnection");
+
+            Set<String> keys = redisConnection.getKeys();
+            for (String k : keys) {
+                Map<String, String> map = new HashMap<>();
+                String type = redisConnection.getTypeByKey(k);
+                if (type.equals("list")) {
+                    String encoding = redisConnection.getEncodingByKey(k);
+                    Long length = redisConnection.getListLen(k);
+                    Long idleTime = redisConnection.getIdleTimeByKey(k);
+                    Long validTime = redisConnection.getValidTimeByKey(k);
+                    map.put("key", k);
+                    map.put("encoding", encoding);
+                    map.put("length", length.toString());
+                    map.put("idleTime", idleTime.toString() + "s");
+                    map.put("validTime", validTime == -1 ? "Forever!" : validTime.toString() + "s");
+                    stringList.add(map);
+                }
+            }
+        }
+        modelMap.addAttribute("taskName", taskName);
+        modelMap.addAttribute("alreadyList", alreadyList);
+        modelMap.addAttribute("stringList", stringList);
+        modelMap.addAttribute("returnCode", returnCode);
+        modelMap.addAttribute("message", message);
+        modelMap.addAttribute("pageCount", stringList.size() / 10 + 1);
+        modelMap.addAttribute("page", StringUtils.isEmpty(reqMap.get("page")) ?
+                1 : Integer.parseInt(reqMap.get("page")));
+        return "redis_list";
+    }
+
+    @RequestMapping(value = "/listDetail")
+    public String listDetail(@RequestParam Map<String, String> reqMap, ModelMap modelMap) {
+        List<String> alreadyList = RedisCommon.getListFromRedis("alreadyList");
+        List<String> valueList = new ArrayList<>();
+        String taskName = StringUtils.isEmpty(reqMap.get("taskName")) ? "localhost" : reqMap.get("taskName");
+        String key = reqMap.get("key");
+        Map<String, Object> redisServiceMap = RedisCommon.getServiceByName(taskName);
+        String returnCode = redisServiceMap.get("returnCode").toString();
+        String message = redisServiceMap.get("returnMessage").toString();
+
+        if (returnCode.equals("0") && !StringUtils.isEmpty(key)) {
+            RedisConnection redisConnection = (RedisConnection) redisServiceMap.get("redisConnection");
+            valueList = redisConnection.getListByKey(key);
+        }
+
+        modelMap.addAttribute("taskName", taskName);
+        modelMap.addAttribute("alreadyList", alreadyList);
+        modelMap.addAttribute("valueList", valueList);
+        modelMap.addAttribute("returnCode", returnCode);
+        modelMap.addAttribute("message", message);
+        modelMap.addAttribute("pageCount", valueList.size() / 10 + 1);
+        modelMap.addAttribute("page", StringUtils.isEmpty(reqMap.get("page")) ?
+                1 : Integer.parseInt(reqMap.get("page")));
+        return "redis_list_detail";
+    }
+
+    @RequestMapping(value = "/hashData")
+    public String hashData(@RequestParam Map<String, String> reqMap, ModelMap modelMap) {
+        List<String> alreadyList = RedisCommon.getListFromRedis("alreadyList");
+        List<Map> stringList = new ArrayList<>();
+        String taskName = StringUtils.isEmpty(reqMap.get("taskName")) ? "localhost" : reqMap.get("taskName");
+        Map<String, Object> redisServiceMap = RedisCommon.getServiceByName(taskName);
+        String returnCode = redisServiceMap.get("returnCode").toString();
+        String message = redisServiceMap.get("returnMessage").toString();
+
+        if (returnCode.equals("0")) {
+            RedisConnection redisConnection = (RedisConnection) redisServiceMap.get("redisConnection");
+
+            Set<String> keys = redisConnection.getKeys();
+            for (String k : keys) {
+                Map<String, String> map = new HashMap<>();
+                String type = redisConnection.getTypeByKey(k);
+                if (type.equals("hash")) {
+                    String encoding = redisConnection.getEncodingByKey(k);
+                    Long count = redisConnection.getHashCount(k);
+                    Long idleTime = redisConnection.getIdleTimeByKey(k);
+                    Long validTime = redisConnection.getValidTimeByKey(k);
+                    map.put("key", k);
+                    map.put("encoding", encoding);
+                    map.put("count", count.toString());
+                    map.put("idleTime", idleTime.toString() + "s");
+                    map.put("validTime", validTime == -1 ? "Forever!" : validTime.toString() + "s");
+                    stringList.add(map);
+                }
+            }
+        }
+        modelMap.addAttribute("taskName", taskName);
+        modelMap.addAttribute("alreadyList", alreadyList);
+        modelMap.addAttribute("stringList", stringList);
+        modelMap.addAttribute("returnCode", returnCode);
+        modelMap.addAttribute("message", message);
+        modelMap.addAttribute("pageCount", stringList.size() / 10 + 1);
+        modelMap.addAttribute("page", StringUtils.isEmpty(reqMap.get("page")) ?
+                1 : Integer.parseInt(reqMap.get("page")));
+        return "redis_hash";
+    }
+
+    @RequestMapping(value = "/hashDetail")
+    public String hashDetail(@RequestParam Map<String, String> reqMap, ModelMap modelMap) {
+        List<String> alreadyList = RedisCommon.getListFromRedis("alreadyList");
+        List<Map> hashList = new ArrayList<>();
+        String taskName = StringUtils.isEmpty(reqMap.get("taskName")) ? "localhost" : reqMap.get("taskName");
+        String key = reqMap.get("key");
+        Map<String, Object> redisServiceMap = RedisCommon.getServiceByName(taskName);
+        String returnCode = redisServiceMap.get("returnCode").toString();
+        String message = redisServiceMap.get("returnMessage").toString();
+
+        if (returnCode.equals("0") && !StringUtils.isEmpty(key)) {
+            RedisConnection redisConnection = (RedisConnection) redisServiceMap.get("redisConnection");
+            Map<String, String> redisMap = redisConnection.getRedisHashAll(key);
+            for (Map.Entry<String, String> entry : redisMap.entrySet()) {
+                Map<String, String> map = new HashMap<>();
+                map.put("field", entry.getKey());
+                map.put("value", entry.getValue());
+                hashList.add(map);
+            }
+        }
+
+        modelMap.addAttribute("taskName", taskName);
+        modelMap.addAttribute("alreadyList", alreadyList);
+        modelMap.addAttribute("hashList", hashList);
+        modelMap.addAttribute("returnCode", returnCode);
+        modelMap.addAttribute("message", message);
+        modelMap.addAttribute("pageCount", hashList.size() / 10 + 1);
+        modelMap.addAttribute("page", StringUtils.isEmpty(reqMap.get("page")) ?
+                1 : Integer.parseInt(reqMap.get("page")));
+        return "redis_hash_detail";
+    }
+
+    @RequestMapping(value = "/admin")
+    public String admin(ModelMap modelMap) {
         String taskName = "localhost";
         Map<String, Object> redisServiceMap = RedisCommon.getServiceByName(taskName);
         String returnCode = redisServiceMap.get("returnCode").toString();
@@ -237,9 +427,9 @@ public class RedisController {
         return "redis_admin";
     }
 
-    @RequestMapping(value = "/redisFind")
+    @RequestMapping(value = "/find")
     public @ResponseBody
-    Map<String, Object> redisFind(String reqJsonString) {
+    Map<String, Object> find(String reqJsonString) {
         Map<String, Object> resultMap = new HashMap<>();
         JSONObject jsonObject = JSONObject.parseObject(reqJsonString);
         Object type = jsonObject.get("typeFlag");
@@ -293,9 +483,9 @@ public class RedisController {
         return resultMap;
     }
 
-    @RequestMapping(value = "/redisChange")
+    @RequestMapping(value = "/change")
     public @ResponseBody
-    Map<String, Object> redisChange(String reqJsonString) {
+    Map<String, Object> change(String reqJsonString) {
         Map<String, Object> resultMap = new HashMap<>();
         Boolean isOK = false;
         JSONObject jsonObject = JSONObject.parseObject(reqJsonString);
@@ -365,9 +555,9 @@ public class RedisController {
         return resultMap;
     }
 
-    @RequestMapping(value = "/redisDelete")
+    @RequestMapping(value = "/delete")
     public @ResponseBody
-    Map<String, Object> redisDelete(String reqJsonString) {
+    Map<String, Object> delete(String reqJsonString) {
         Map<String, Object> resultMap = new HashMap<>();
         Boolean isOK = false;
         JSONObject jsonObject = JSONObject.parseObject(reqJsonString);
@@ -397,7 +587,7 @@ public class RedisController {
                     if (StringUtils.isEmpty(childKey)) {
                         isOK = redisConnection.deleteByKey(key.toString());
                     } else {
-                        isOK = redisConnection.delHashByFeild(key.toString(), childKey.toString());
+                        isOK = redisConnection.delHashByField(key.toString(), childKey.toString());
                     }
                     break;
                 default:
@@ -412,9 +602,9 @@ public class RedisController {
         return resultMap;
     }
 
-    @RequestMapping(value = "/redisExpire")
+    @RequestMapping(value = "/expire")
     public @ResponseBody
-    Map<String, Object> redisExpire(String reqJsonString) {
+    Map<String, Object> expire(String reqJsonString) {
         Map<String, Object> resultMap = new HashMap<>();
         JSONObject jsonObject = JSONObject.parseObject(reqJsonString);
         Object validTime = jsonObject.get("valid_time");
@@ -444,9 +634,9 @@ public class RedisController {
         return resultMap;
     }
 
-    @RequestMapping(value = "/redisControlSwitch")
+    @RequestMapping(value = "/controlSwitch")
     public @ResponseBody
-    Map<String, Object> redisControlSwitch(String reqJsonString) {
+    Map<String, Object> controlSwitch(String reqJsonString) {
         Map<String, Object> resultMap = new HashMap<>();
         JSONObject jsonObject = JSONObject.parseObject(reqJsonString);
         Object taskName = jsonObject.get("taskName");
@@ -514,8 +704,121 @@ public class RedisController {
         return resultMap;
     }
 
-    @RequestMapping(value = "/redisCPU")
-    public String redisCPU(ModelMap modelMap) {
+    @RequestMapping(value = "/cpu")
+    public String cpu(@RequestParam Map<String, String> reqMap, ModelMap modelMap) {
+        List<String> alreadyList = RedisCommon.getListFromRedis("alreadyList");
+        String taskName = StringUtils.isEmpty(reqMap.get("taskName")) ? "localhost" : reqMap.get("taskName");
+        Map<String, Object> redisInfoMap = RedisCommon.getInfoByName(taskName);
+        String returnCode = redisInfoMap.get("returnCode").toString();
+        String returnMessage = redisInfoMap.get("returnMessage").toString();
+        if (returnCode.equals("0")) {
+            List<Float> sysList = new ArrayList<>();
+            for (RedisInfoCPU redisInfoCPU : redisLogService.getSevenCPUByName(taskName)) {
+                sysList.add(redisInfoCPU.getUsed_cpu_sys());
+            }
+
+            modelMap.addAttribute("used_cpu_sys", sysList);
+        }
+        modelMap.addAttribute("taskName", taskName);
+        modelMap.addAttribute("alreadyList", alreadyList);
+        modelMap.addAttribute("returnCode", returnCode);
+        modelMap.addAttribute("returnMessage", returnMessage);
         return "redis_cpu";
+    }
+
+    @RequestMapping(value = "/clients")
+    public String clients(@RequestParam Map<String, String> reqMap, ModelMap modelMap) {
+        List<String> alreadyList = RedisCommon.getListFromRedis("alreadyList");
+        String taskName = StringUtils.isEmpty(reqMap.get("taskName")) ? "localhost" : reqMap.get("taskName");
+        Map<String, Object> redisInfoMap = RedisCommon.getInfoByName(taskName);
+        String returnCode = redisInfoMap.get("returnCode").toString();
+        String returnMessage = redisInfoMap.get("returnMessage").toString();
+        if (returnCode.equals("0")) {
+            List<Integer> clientsList = new ArrayList<>();
+            for (RedisInfoClients redisInfoClients : redisLogService.getSevenClientsByName(taskName)) {
+                clientsList.add(redisInfoClients.getConnected_clients());
+            }
+
+            modelMap.addAttribute("connected_clients", clientsList);
+        }
+        modelMap.addAttribute("taskName", taskName);
+        modelMap.addAttribute("alreadyList", alreadyList);
+        modelMap.addAttribute("returnCode", returnCode);
+        modelMap.addAttribute("returnMessage", returnMessage);
+        return "redis_clients";
+    }
+
+    @RequestMapping(value = "/memory")
+    public String memory(@RequestParam Map<String, String> reqMap, ModelMap modelMap) {
+        List<String> alreadyList = RedisCommon.getListFromRedis("alreadyList");
+        String taskName = StringUtils.isEmpty(reqMap.get("taskName")) ? "localhost" : reqMap.get("taskName");
+        Map<String, Object> redisInfoMap = RedisCommon.getInfoByName(taskName);
+        String returnCode = redisInfoMap.get("returnCode").toString();
+        String returnMessage = redisInfoMap.get("returnMessage").toString();
+        if (returnCode.equals("0")) {
+            List<Float> luaList = new ArrayList<>();
+            List<Float> rssList = new ArrayList<>();
+            List<Float> usedList = new ArrayList<>();
+            List<Float> peakList = new ArrayList<>();
+
+            for (RedisInfoMemory redisInfoMemory : redisLogService.getSevenMemoryByName(taskName)) {
+                luaList.add(redisInfoMemory.getUsed_memory_lua_human());
+                rssList.add(redisInfoMemory.getUsed_memory_rss_human());
+                usedList.add(redisInfoMemory.getUsed_memory_human());
+                peakList.add(redisInfoMemory.getUsed_memory_peak_human());
+            }
+            modelMap.addAttribute("taskName", taskName);
+            modelMap.addAttribute("alreadyList", alreadyList);
+            modelMap.addAttribute("used_memory_lua_human", luaList);
+            modelMap.addAttribute("used_memory_rss_human", rssList);
+            modelMap.addAttribute("used_memory_human", usedList);
+            modelMap.addAttribute("used_memory_peak_human", peakList);
+            modelMap.addAttribute("returnCode", returnCode);
+            modelMap.addAttribute("returnMessage", returnMessage);
+        }
+        return "redis_memory";
+    }
+
+    @RequestMapping(value = "/data")
+    public String data(@RequestParam Map<String, String> reqMap, ModelMap modelMap) {
+        List<String> alreadyList = RedisCommon.getListFromRedis("alreadyList");
+        String taskName = StringUtils.isEmpty(reqMap.get("taskName")) ? "localhost" : reqMap.get("taskName");
+        Map<String, Object> redisInfoMap = RedisCommon.getInfoByName(taskName);
+        String returnCode = redisInfoMap.get("returnCode").toString();
+        String returnMessage = redisInfoMap.get("returnMessage").toString();
+        if (returnCode.equals("0")) {
+            List<Float> sysList = new ArrayList<>();
+            for (RedisInfoCPU redisInfoCPU : redisLogService.getSevenCPUByName(taskName)) {
+                sysList.add(redisInfoCPU.getUsed_cpu_sys());
+            }
+
+            List<Integer> clientsList = new ArrayList<>();
+            for (RedisInfoClients redisInfoClients : redisLogService.getSevenClientsByName(taskName)) {
+                clientsList.add(redisInfoClients.getConnected_clients());
+            }
+
+            List<Float> luaList = new ArrayList<>();
+            List<Float> rssList = new ArrayList<>();
+            List<Float> usedList = new ArrayList<>();
+            List<Float> peakList = new ArrayList<>();
+            for (RedisInfoMemory redisInfoMemory : redisLogService.getSevenMemoryByName(taskName)) {
+                usedList.add(redisInfoMemory.getUsed_memory_human());
+                luaList.add(redisInfoMemory.getUsed_memory_lua_human());
+                rssList.add(redisInfoMemory.getUsed_memory_rss_human());
+                peakList.add(redisInfoMemory.getUsed_memory_peak_human());
+            }
+
+            modelMap.addAttribute("used_cpu_sys", sysList);
+            modelMap.addAttribute("connected_clients", clientsList);
+            modelMap.addAttribute("used_memory_lua_human", luaList);
+            modelMap.addAttribute("used_memory_rss_human", rssList);
+            modelMap.addAttribute("used_memory_human", usedList);
+            modelMap.addAttribute("used_memory_peak_human", peakList);
+        }
+        modelMap.addAttribute("taskName", taskName);
+        modelMap.addAttribute("alreadyList", alreadyList);
+        modelMap.addAttribute("returnCode", returnCode);
+        modelMap.addAttribute("returnMessage", returnMessage);
+        return "redis_data";
     }
 }

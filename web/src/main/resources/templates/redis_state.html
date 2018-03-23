@@ -45,10 +45,11 @@
       <tbody>
       <!--/*@thymesVar id="processes" type=""*/-->
       <tr th:each="collect,iterStat : ${processes}">
-          <!--th:onclick="'javascript:linkToDetail(\''+${collect['taskName']}+'\', \'1\')'"-->
-        <td th:text="${collect['taskName']}" th:onclick="'javascript:linkToDetail(\''+${collect['taskName']}+
-        '\', \'1\')'">Andy</td>
-        <td th:text="${collect['state']}" th:id = "State">Success</td>
+        <!--th:onclick="'javascript:linkToDetail(\''+${collect['taskName']}+'\', \'1\')'"-->
+        <td th:text="${collect['taskName']}"
+            th:onclick="'javascript:linkToDetail(\''+${collect['taskName']}+'\', \'1\')'">Andy
+        </td>
+        <td th:text="${collect['state']}" th:id="State">Success</td>
         <td th:text="${collect['version']}">v 1.0</td>
         <td th:text="${collect['duration']}">1 hour</td>
         <td th:text="${collect['redisSoftwarePath']}">Software Path</td>

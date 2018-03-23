@@ -28,9 +28,9 @@
   <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/extension/bmap.min.js"></script>
   <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/simplex.js"></script>
 
-  <script type="text/javascript" src="/static/js/redis_data.js"></script>
+  <script type="text/javascript" src="/static/js/redis_clients.js"></script>
 
-  <title>redis data</title>
+  <title>redis clients</title>
 </head>
 <body style="height: 100%;">
 <div class="container" style="height: 100%;">
@@ -50,10 +50,7 @@
       </div>
     </form>
   </div>
-  <!--/*@thymesVar id="taskName" type=""*/-->
-  <div id="clients" style="height: 30%; width: 66%;" th:onclick="'javascript:linkToDetail(\''+${taskName}+'\', \'clients\')'"></div>
-  <div id="cpu" style="height: 30%; width: 66%;" th:onclick="'javascript:linkToDetail(\''+${taskName}+'\', \'cpu\')'"></div>
-  <div id="memory" style="height: 30%; width: 63%;" th:onclick="'javascript:linkToDetail(\''+${taskName}+'\', \'memory\')'"></div>
+  <div id="container" style="height: 80%; width: 80%;"></div>
 </div>
 <script type="text/javascript" th:inline="javascript">
     /*<![CDATA[*/
@@ -61,18 +58,12 @@
     var message = [[${returnMessage}]];
     if (isOK === "0") {
         var connected_clients = [[${connected_clients}]];
-        var used_cpu_sys = [[${used_cpu_sys}]];
-        var used_memory_lua_human = [[${used_memory_lua_human}]];
-        var used_memory_rss_human = [[${used_memory_rss_human}]];
-        var used_memory_human = [[${used_memory_human}]];
-        var used_memory_peak_human = [[${used_memory_peak_human}]];
-
-        init_all(connected_clients, used_cpu_sys, used_memory_lua_human, used_memory_rss_human, used_memory_human,
-            used_memory_peak_human);
+        init(connected_clients);
     } else {
         alert("failed: " + message);
     }
     /*]]>*/
 </script>
+
 </body>
 </html>

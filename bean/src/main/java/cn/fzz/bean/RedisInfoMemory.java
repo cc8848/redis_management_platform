@@ -11,6 +11,7 @@ public class RedisInfoMemory {
     private int used_memory_peak;
     private int used_memory_lua;
     private float used_memory_human;
+    private float used_memory_rss_human;
     private float used_memory_peak_human;
     private float used_memory_lua_human;
     private float mem_fragmentation_ratio;
@@ -80,6 +81,14 @@ public class RedisInfoMemory {
 
     public void setUsed_memory_human(float used_memory_human) {
         this.used_memory_human = used_memory_human;
+    }
+
+    public float getUsed_memory_rss_human() {
+        return used_memory_rss_human;
+    }
+
+    public void setUsed_memory_rss_human(float used_memory_rss_human) {
+        this.used_memory_rss_human = used_memory_rss_human;
     }
 
     public float getUsed_memory_peak_human() {
