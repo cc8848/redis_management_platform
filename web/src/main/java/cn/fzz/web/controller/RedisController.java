@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import com.alibaba.fastjson.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -708,18 +709,42 @@ public class RedisController {
     public String cpu(@RequestParam Map<String, String> reqMap, ModelMap modelMap) {
         List<String> alreadyList = RedisCommon.getListFromRedis("alreadyList");
         String taskName = StringUtils.isEmpty(reqMap.get("taskName")) ? "localhost" : reqMap.get("taskName");
+        String period = StringUtils.isEmpty(reqMap.get("period")) ? "minute" : reqMap.get("period");
         Map<String, Object> redisInfoMap = RedisCommon.getInfoByName(taskName);
         String returnCode = redisInfoMap.get("returnCode").toString();
         String returnMessage = redisInfoMap.get("returnMessage").toString();
         if (returnCode.equals("0")) {
             List<Float> sysList = new ArrayList<>();
-            for (RedisInfoCPU redisInfoCPU : redisLogService.getSevenCPUByName(taskName)) {
-                sysList.add(redisInfoCPU.getUsed_cpu_sys());
+            List<String> abscissa = new ArrayList<>();
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
+            if (period.equals("minute")) {
+                for (RedisInfoCPU redisInfoCPU : redisLogService.getSevenCPUByName(taskName)) {
+                    sysList.add(redisInfoCPU.getUsed_cpu_sys());
+                    abscissa.add(simpleDateFormat.format(redisInfoCPU.getDate()));
+                }
+            } else {
+                simpleDateFormat = new SimpleDateFormat("HH:00:00");
+                Long time = System.currentTimeMillis();
+                Date date1 = new Date(time);
+                date1.setMinutes(0);
+                date1.setSeconds(0);
+                Date date2 = new Date(time);
+                date2.setMinutes(0);
+                date2.setSeconds(0);
+                for (int i = 0; i < 7; i++) {
+                    date2.setHours(date1.getHours() + 1);
+                    RedisInfoCPU redisInfoCPU = redisLogService.getRedisCPUByDate1(taskName, date1, date2);
+                    sysList.add(StringUtils.isEmpty(redisInfoCPU) ? 0 : redisInfoCPU.getUsed_cpu_sys());
+                    abscissa.add(StringUtils.isEmpty(redisInfoCPU) ?
+                            simpleDateFormat.format(date1) : simpleDateFormat.format(redisInfoCPU.getDate()));
+                    date1.setHours(date1.getHours() - 1);
+                }
             }
-
             modelMap.addAttribute("used_cpu_sys", sysList);
+            modelMap.addAttribute("abscissa", abscissa);
         }
         modelMap.addAttribute("taskName", taskName);
+        modelMap.addAttribute("period", period);
         modelMap.addAttribute("alreadyList", alreadyList);
         modelMap.addAttribute("returnCode", returnCode);
         modelMap.addAttribute("returnMessage", returnMessage);
@@ -730,16 +755,38 @@ public class RedisController {
     public String clients(@RequestParam Map<String, String> reqMap, ModelMap modelMap) {
         List<String> alreadyList = RedisCommon.getListFromRedis("alreadyList");
         String taskName = StringUtils.isEmpty(reqMap.get("taskName")) ? "localhost" : reqMap.get("taskName");
+        String period = StringUtils.isEmpty(reqMap.get("period")) ? "minute" : reqMap.get("period");
         Map<String, Object> redisInfoMap = RedisCommon.getInfoByName(taskName);
         String returnCode = redisInfoMap.get("returnCode").toString();
         String returnMessage = redisInfoMap.get("returnMessage").toString();
         if (returnCode.equals("0")) {
             List<Integer> clientsList = new ArrayList<>();
-            for (RedisInfoClients redisInfoClients : redisLogService.getSevenClientsByName(taskName)) {
-                clientsList.add(redisInfoClients.getConnected_clients());
+            List<String> abscissa = new ArrayList<>();
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
+            if (period.equals("minute")) {
+                for (RedisInfoClients redisInfoClients : redisLogService.getSevenClientsByName(taskName)) {
+                    clientsList.add(redisInfoClients.getConnected_clients());
+                }
+            }else {
+                simpleDateFormat = new SimpleDateFormat("HH:00:00");
+                Long time = System.currentTimeMillis();
+                Date date1 = new Date(time);
+                date1.setMinutes(0);
+                date1.setSeconds(0);
+                Date date2 = new Date(time);
+                date2.setMinutes(0);
+                date2.setSeconds(0);
+                for (int i = 0; i < 7; i++) {
+                    date2.setHours(date1.getHours() + 1);
+                    RedisInfoClients redisInfoClients = redisLogService.getRedisClientsByDate1(taskName, date1, date2);
+                    clientsList.add(StringUtils.isEmpty(redisInfoClients) ? 0 : redisInfoClients.getConnected_clients());
+                    abscissa.add(StringUtils.isEmpty(redisInfoClients) ?
+                            simpleDateFormat.format(date1) : simpleDateFormat.format(redisInfoClients.getDate()));
+                    date1.setHours(date1.getHours() - 1);
+                }
             }
-
             modelMap.addAttribute("connected_clients", clientsList);
+            modelMap.addAttribute("abscissa", abscissa);
         }
         modelMap.addAttribute("taskName", taskName);
         modelMap.addAttribute("alreadyList", alreadyList);
@@ -752,6 +799,7 @@ public class RedisController {
     public String memory(@RequestParam Map<String, String> reqMap, ModelMap modelMap) {
         List<String> alreadyList = RedisCommon.getListFromRedis("alreadyList");
         String taskName = StringUtils.isEmpty(reqMap.get("taskName")) ? "localhost" : reqMap.get("taskName");
+        String period = StringUtils.isEmpty(reqMap.get("period")) ? "minute" : reqMap.get("period");
         Map<String, Object> redisInfoMap = RedisCommon.getInfoByName(taskName);
         String returnCode = redisInfoMap.get("returnCode").toString();
         String returnMessage = redisInfoMap.get("returnMessage").toString();
@@ -760,22 +808,53 @@ public class RedisController {
             List<Float> rssList = new ArrayList<>();
             List<Float> usedList = new ArrayList<>();
             List<Float> peakList = new ArrayList<>();
-
-            for (RedisInfoMemory redisInfoMemory : redisLogService.getSevenMemoryByName(taskName)) {
-                luaList.add(redisInfoMemory.getUsed_memory_lua_human());
-                rssList.add(redisInfoMemory.getUsed_memory_rss_human());
-                usedList.add(redisInfoMemory.getUsed_memory_human());
-                peakList.add(redisInfoMemory.getUsed_memory_peak_human());
+            List<String> abscissa = new ArrayList<>();
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
+            if (period.equals("minute")) {
+                for (RedisInfoMemory redisInfoMemory : redisLogService.getSevenMemoryByName(taskName)) {
+                    luaList.add(redisInfoMemory.getUsed_memory_lua_human());
+                    rssList.add(redisInfoMemory.getUsed_memory_rss_human());
+                    usedList.add(redisInfoMemory.getUsed_memory_human());
+                    peakList.add(redisInfoMemory.getUsed_memory_peak_human());
+                }
+            }else {
+                simpleDateFormat = new SimpleDateFormat("HH:00:00");
+                Long time = System.currentTimeMillis();
+                Date date1 = new Date(time);
+                date1.setMinutes(0);
+                date1.setSeconds(0);
+                Date date2 = new Date(time);
+                date2.setMinutes(0);
+                date2.setSeconds(0);
+                for (int i = 0; i < 7; i++) {
+                    date2.setHours(date1.getHours() + 1);
+                    RedisInfoMemory redisInfoMemory = redisLogService.getRedisMemoryByDate1(taskName, date1, date2);
+                    if (!StringUtils.isEmpty(redisInfoMemory)){
+                        luaList.add(redisInfoMemory.getUsed_memory_lua_human());
+                        rssList.add(redisInfoMemory.getUsed_memory_rss_human());
+                        usedList.add(redisInfoMemory.getUsed_memory_human());
+                        peakList.add(redisInfoMemory.getUsed_memory_peak_human());
+                        abscissa.add(simpleDateFormat.format(redisInfoMemory.getDate()));
+                    }else {
+                        luaList.add(0f);
+                        rssList.add(0f);
+                        usedList.add(0f);
+                        peakList.add(0f);
+                        abscissa.add(simpleDateFormat.format(date1));
+                    }
+                    date1.setHours(date1.getHours() - 1);
+                }
             }
-            modelMap.addAttribute("taskName", taskName);
-            modelMap.addAttribute("alreadyList", alreadyList);
             modelMap.addAttribute("used_memory_lua_human", luaList);
             modelMap.addAttribute("used_memory_rss_human", rssList);
             modelMap.addAttribute("used_memory_human", usedList);
             modelMap.addAttribute("used_memory_peak_human", peakList);
-            modelMap.addAttribute("returnCode", returnCode);
-            modelMap.addAttribute("returnMessage", returnMessage);
+            modelMap.addAttribute("abscissa", abscissa);
         }
+        modelMap.addAttribute("taskName", taskName);
+        modelMap.addAttribute("alreadyList", alreadyList);
+        modelMap.addAttribute("returnCode", returnCode);
+        modelMap.addAttribute("returnMessage", returnMessage);
         return "redis_memory";
     }
 
@@ -783,31 +862,72 @@ public class RedisController {
     public String data(@RequestParam Map<String, String> reqMap, ModelMap modelMap) {
         List<String> alreadyList = RedisCommon.getListFromRedis("alreadyList");
         String taskName = StringUtils.isEmpty(reqMap.get("taskName")) ? "localhost" : reqMap.get("taskName");
+        String period = StringUtils.isEmpty(reqMap.get("period")) ? "minute" : reqMap.get("period");
         Map<String, Object> redisInfoMap = RedisCommon.getInfoByName(taskName);
         String returnCode = redisInfoMap.get("returnCode").toString();
         String returnMessage = redisInfoMap.get("returnMessage").toString();
         if (returnCode.equals("0")) {
+            List<String> abscissa = new ArrayList<>();
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
             List<Float> sysList = new ArrayList<>();
-            for (RedisInfoCPU redisInfoCPU : redisLogService.getSevenCPUByName(taskName)) {
-                sysList.add(redisInfoCPU.getUsed_cpu_sys());
-            }
-
             List<Integer> clientsList = new ArrayList<>();
-            for (RedisInfoClients redisInfoClients : redisLogService.getSevenClientsByName(taskName)) {
-                clientsList.add(redisInfoClients.getConnected_clients());
-            }
-
             List<Float> luaList = new ArrayList<>();
             List<Float> rssList = new ArrayList<>();
             List<Float> usedList = new ArrayList<>();
             List<Float> peakList = new ArrayList<>();
-            for (RedisInfoMemory redisInfoMemory : redisLogService.getSevenMemoryByName(taskName)) {
-                usedList.add(redisInfoMemory.getUsed_memory_human());
-                luaList.add(redisInfoMemory.getUsed_memory_lua_human());
-                rssList.add(redisInfoMemory.getUsed_memory_rss_human());
-                peakList.add(redisInfoMemory.getUsed_memory_peak_human());
-            }
+            if (period.equals("minute")) {
+                for (RedisInfoCPU redisInfoCPU : redisLogService.getSevenCPUByName(taskName)) {
+                    sysList.add(redisInfoCPU.getUsed_cpu_sys());
+                }
+                for (RedisInfoClients redisInfoClients : redisLogService.getSevenClientsByName(taskName)) {
+                    clientsList.add(redisInfoClients.getConnected_clients());
+                }
+                for (RedisInfoMemory redisInfoMemory : redisLogService.getSevenMemoryByName(taskName)) {
+                    usedList.add(redisInfoMemory.getUsed_memory_human());
+                    luaList.add(redisInfoMemory.getUsed_memory_lua_human());
+                    rssList.add(redisInfoMemory.getUsed_memory_rss_human());
+                    peakList.add(redisInfoMemory.getUsed_memory_peak_human());
+                }
+            }else {
+                simpleDateFormat = new SimpleDateFormat("HH:00:00");
+                Long time = System.currentTimeMillis();
+                Date date1 = new Date(time);
+                date1.setMinutes(0);
+                date1.setSeconds(0);
+                Date date2 = new Date(time);
+                date2.setMinutes(0);
+                date2.setSeconds(0);
+                for (int i = 0; i < 7; i++) {
+                    date2.setHours(date1.getHours() + 1);
+                    RedisInfoCPU redisInfoCPU = redisLogService.getRedisCPUByDate1(taskName, date1, date2);
+                    sysList.add(StringUtils.isEmpty(redisInfoCPU) ? 0 : redisInfoCPU.getUsed_cpu_sys());
+                    abscissa.add(StringUtils.isEmpty(redisInfoCPU) ?
+                            simpleDateFormat.format(date1) : simpleDateFormat.format(redisInfoCPU.getDate()));
 
+                    RedisInfoClients redisInfoClients = redisLogService.getRedisClientsByDate1(taskName, date1, date2);
+                    clientsList.add(StringUtils.isEmpty(redisInfoClients) ? 0 : redisInfoClients.getConnected_clients());
+                    abscissa.add(StringUtils.isEmpty(redisInfoClients) ?
+                            simpleDateFormat.format(date1) : simpleDateFormat.format(redisInfoClients.getDate()));
+
+                    RedisInfoMemory redisInfoMemory = redisLogService.getRedisMemoryByDate1(taskName, date1, date2);
+                    if (!StringUtils.isEmpty(redisInfoMemory)){
+                        usedList.add(redisInfoMemory.getUsed_memory_human());
+                        luaList.add(redisInfoMemory.getUsed_memory_lua_human());
+                        rssList.add(redisInfoMemory.getUsed_memory_rss_human());
+                        peakList.add(redisInfoMemory.getUsed_memory_peak_human());
+                        abscissa.add(simpleDateFormat.format(redisInfoMemory.getDate()));
+                    }else {
+                        luaList.add(0.0f);
+                        rssList.add(0.0f);
+                        usedList.add(0.0f);
+                        peakList.add(0.0f);
+                        abscissa.add(simpleDateFormat.format(date1));
+                    }
+
+                    date1.setHours(date1.getHours() - 1);
+                }
+            }
+            modelMap.addAttribute("abscissa", abscissa);
             modelMap.addAttribute("used_cpu_sys", sysList);
             modelMap.addAttribute("connected_clients", clientsList);
             modelMap.addAttribute("used_memory_lua_human", luaList);

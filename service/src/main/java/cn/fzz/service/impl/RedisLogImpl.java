@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -63,6 +64,26 @@ public class RedisLogImpl implements RedisLogService {
     @Override
     public List<RedisInfoCPU> getSevenCPUByName(String taskName) {
         return redisMapper.getSevenCPUByName(taskName);
+    }
+
+    @Override
+    public RedisInfoCPU getRedisCPUByDate(String taskName, Date date){
+        return redisMapper.getRedisCPUByDate(taskName, date);
+    }
+
+    @Override
+    public RedisInfoClients getRedisClientsByDate1(String taskName, Date date1, Date date2){
+        return redisMapper.getRedisClientsByDate1(taskName, date1, date2);
+    }
+
+    @Override
+    public RedisInfoMemory getRedisMemoryByDate1(String taskName, Date date1, Date date2){
+        return redisMapper.getRedisMemoryByDate1(taskName, date1, date2);
+    }
+
+    @Override
+    public RedisInfoCPU getRedisCPUByDate1(String taskName, Date date1, Date date2){
+        return redisMapper.getRedisCPUByDate1(taskName, date1, date2);
     }
 
     @Override

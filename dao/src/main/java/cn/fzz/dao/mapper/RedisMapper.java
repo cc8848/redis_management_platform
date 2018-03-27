@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -53,4 +54,16 @@ public interface RedisMapper {
 
     @Select("select * from redis_clients where task_name = #{taskName} order by date desc limit 0, 7;")
     public List<RedisInfoClients> getSevenClientsByName(String taskName);
+
+    @Select("select * from redis_cpu where task_name = #{0} and date >= #{1} order by date limit 0, 1;")
+    public RedisInfoCPU getRedisCPUByDate(String taskName, Date date);
+
+    @Select("select * from redis_cpu where task_name = #{0} and date >= #{1} and date < #{2} order by date limit 0, 1;")
+    public RedisInfoCPU getRedisCPUByDate1(String taskName, Date date1, Date date2);
+
+    @Select("select * from redis_clients where task_name = #{0} and date >= #{1} and date < #{2} order by date limit 0, 1;")
+    public RedisInfoClients getRedisClientsByDate1(String taskName, Date date1, Date date2);
+
+    @Select("select * from redis_memory where task_name = #{0} and date >= #{1} and date < #{2} order by date limit 0, 1;")
+    public RedisInfoMemory getRedisMemoryByDate1(String taskName, Date date1, Date date2);
 }

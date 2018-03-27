@@ -1,5 +1,7 @@
 package cn.fzz.bean;
 
+import java.util.Date;
+
 /**
  * Created by Administrator on 2018/3/18.
  * Desc:
@@ -16,6 +18,15 @@ public class RedisInfoMemory {
     private float used_memory_lua_human;
     private float mem_fragmentation_ratio;
     private String mem_allocator;
+    private Date date;
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
 
     public RedisInfoMemory() {
     }

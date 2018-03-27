@@ -5,6 +5,7 @@ import cn.fzz.bean.RedisInfoCPU;
 import cn.fzz.bean.RedisInfoClients;
 import cn.fzz.bean.RedisInfoMemory;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -20,5 +21,9 @@ public interface RedisLogService {
     public List<RedisInfoMemory> getSevenMemoryByName(String taskName);
     public List<RedisInfoCPU> getSevenCPU();
     public List<RedisInfoCPU> getSevenCPUByName(String taskName);
+    public RedisInfoCPU getRedisCPUByDate(String taskName, Date date);
+    public RedisInfoCPU getRedisCPUByDate1(String taskName, Date date1, Date date2);
+    public RedisInfoClients getRedisClientsByDate1(String taskName, Date date1, Date date2);
+    public RedisInfoMemory getRedisMemoryByDate1(String taskName, Date date1, Date date2);
     public List<RedisInfoClients> getSevenClientsByName(String taskName);
 }

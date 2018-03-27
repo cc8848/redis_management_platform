@@ -33,6 +33,8 @@
   <title>redis cpu</title>
 </head>
 <body style="height: 100%;">
+<!--/*@thymesVar id="taskName" type=""*/-->
+<input id = "taskName" type="hidden" th:value="${taskName}" />
 <div class="container" style="height: 100%;">
   <div class="row col-sm-5">
     <form role="form">
@@ -50,15 +52,32 @@
       </div>
     </form>
   </div>
+  <div class="row col-sm-5">
+    <form role="form">
+      <div class="form-group">
+        <label>Please select abscissa: </label>
+        <label>
+          <select id = "unit" class="form-control" onchange="change_abscissa(this.options[this.selectedIndex].text, '0')">
+            <!--/*@thymesVar id="alreadyList" type=""*/-->
+            <!--/*@thymesVar id="taskName" type=""*/-->
+            <option id = "minute">minute</option>
+            <option id = "hour">hour</option>
+          </select>
+        </label>
+      </div>
+    </form>
+  </div>
   <div id="container" style="height: 80%; width: 80%;"></div>
 </div>
 <script type="text/javascript" th:inline="javascript">
     /*<![CDATA[*/
+    $("#unit").val([[${period}]]);
     var isOK = [[${returnCode}]];
     var message = [[${returnMessage}]];
     if (isOK === "0") {
         var used_cpu_sys = [[${used_cpu_sys}]];
-        init(used_cpu_sys);
+        var abscissa = [[${abscissa}]];
+        init(used_cpu_sys, abscissa);
     } else {
         alert("failed: " + message);
     }

@@ -1,5 +1,7 @@
 package cn.fzz.bean;
 
+import java.util.Date;
+
 /**
  * Created by Administrator on 2018/3/22.
  * Desc:
@@ -8,6 +10,15 @@ public class RedisDangerousEvent {
     private String event_name;
     private String type;
     private String message;
+    private Date date;
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
 
     public String getEvent_name() {
         return event_name;

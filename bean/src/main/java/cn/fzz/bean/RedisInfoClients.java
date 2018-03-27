@@ -1,5 +1,7 @@
 package cn.fzz.bean;
 
+import java.util.Date;
+
 /**
  * Created by Administrator on 2018/3/21.
  * Desc:
@@ -10,6 +12,15 @@ public class RedisInfoClients {
     private int blocked_clients;
     private int client_longest_input_buf;
     private int client_longest_output_list;
+    private Date date;
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
 
     public String getTask_name() {
         return task_name;

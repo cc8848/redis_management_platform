@@ -20,12 +20,12 @@ function switchover(task_name, ifOpenNew) {
 }
 
 function init_all(connected_clients, used_cpu_sys, used_memory_lua_human, used_memory_rss_human, used_memory_human,
-                  used_memory_peak_human) {
-    init_clients(connected_clients);
-    init_cpu(used_cpu_sys);
-    init_memory(used_memory_lua_human, used_memory_rss_human, used_memory_human, used_memory_peak_human);
+                  used_memory_peak_human, abscissa) {
+    init_clients(connected_clients, abscissa);
+    init_cpu(used_cpu_sys, abscissa);
+    init_memory(used_memory_lua_human, used_memory_rss_human, used_memory_human, used_memory_peak_human, abscissa);
 }
-function init_clients(connected_clients) {
+function init_clients(connected_clients, abscissa) {
     var dom = document.getElementById("clients");
     var myChart = echarts.init(dom);
     var app = {};
@@ -42,7 +42,8 @@ function init_clients(connected_clients) {
         },
         xAxis: {
             type: 'category',
-            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+            data: [abscissa[6], abscissa[5], abscissa[4], abscissa[3], abscissa[2],
+                abscissa[1], abscissa[0]]
         },
         yAxis: {
             type: 'value'
@@ -58,7 +59,7 @@ function init_clients(connected_clients) {
     }
 }
 
-function init_cpu(used_cpu_sys) {
+function init_cpu(used_cpu_sys, abscissa) {
     var dom = document.getElementById("cpu");
     var myChart = echarts.init(dom);
     var app = {};
@@ -75,7 +76,8 @@ function init_cpu(used_cpu_sys) {
         },
         xAxis: {
             type: 'category',
-            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+            data: [abscissa[6], abscissa[5], abscissa[4], abscissa[3], abscissa[2],
+                abscissa[1], abscissa[0]]
         },
         yAxis: {
             type: 'value'
@@ -92,7 +94,7 @@ function init_cpu(used_cpu_sys) {
     }
 }
 
-function init_memory(used_memory_lua_human, used_memory_rss_human, used_memory_human, used_memory_peak_human) {
+function init_memory(used_memory_lua_human, used_memory_rss_human, used_memory_human, used_memory_peak_human, abscissa) {
     var dom = document.getElementById("memory");
     var myChart = echarts.init(dom);
     var app = {};
@@ -129,7 +131,8 @@ function init_memory(used_memory_lua_human, used_memory_rss_human, used_memory_h
             {
                 type : 'category',
                 boundaryGap : false,
-                data : ['周一','周二','周三','周四','周五','周六','周日']
+                data : [abscissa[6], abscissa[5], abscissa[4], abscissa[3], abscissa[2],
+                    abscissa[1], abscissa[0]]
             }
         ],
         yAxis : [
@@ -214,10 +217,6 @@ function page_turning(page, type) {
 
 //切换
 function linkToDetail(task_name, type, key) {
-    var requestMap = {};
-    requestMap.taskName = task_name;
-    requestMap.key = key;
-
     var tempForm = document.createElement("form");
     tempForm.action = "http://localhost:9090/redis/" + type;
     tempForm.method = "post";
@@ -229,6 +228,26 @@ function linkToDetail(task_name, type, key) {
     tempForm.appendChild(dict);
     dict.name = "key";
     dict.value = key;
+    tempForm.appendChild(dict);
+    document.body.appendChild(tempForm);
+    tempForm.submit();
+    return tempForm;
+}
+//单位
+function change_abscissa(unit, ifOpenNew) {
+    var tempForm = document.createElement("form");
+    tempForm.action = "http://localhost:9090/redis/data";
+    tempForm.method = "post";
+    tempForm.style.display = "none";
+    if (ifOpenNew === "1") {
+        tempForm.target = "_blank";
+    }
+    var dict = document.createElement("input");
+    dict.name = "taskName";
+    dict.value = $("#taskName").val();
+    tempForm.appendChild(dict);
+    dict.name = "period";
+    dict.value = unit;
     tempForm.appendChild(dict);
     document.body.appendChild(tempForm);
     tempForm.submit();
