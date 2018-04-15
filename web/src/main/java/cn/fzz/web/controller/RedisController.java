@@ -135,6 +135,8 @@ public class RedisController {
         return "redis_conf";
     }
 
+    // 停用
+
     /**
      * redis进程状态
      *
@@ -165,6 +167,7 @@ public class RedisController {
         return "redis_state";
     }
 
+    //停用
     @RequestMapping(value = "/data_back")
     public String data_back(@RequestParam Map<String, String> reqMap, ModelMap modelMap) {
         List<String> alreadyList = RedisCommon.getListFromRedis("alreadyList");
@@ -767,7 +770,7 @@ public class RedisController {
                 for (RedisInfoClients redisInfoClients : redisLogService.getSevenClientsByName(taskName)) {
                     clientsList.add(redisInfoClients.getConnected_clients());
                 }
-            }else {
+            } else {
                 simpleDateFormat = new SimpleDateFormat("HH:00:00");
                 Long time = System.currentTimeMillis();
                 Date date1 = new Date(time);
@@ -817,7 +820,7 @@ public class RedisController {
                     usedList.add(redisInfoMemory.getUsed_memory_human());
                     peakList.add(redisInfoMemory.getUsed_memory_peak_human());
                 }
-            }else {
+            } else {
                 simpleDateFormat = new SimpleDateFormat("HH:00:00");
                 Long time = System.currentTimeMillis();
                 Date date1 = new Date(time);
@@ -829,13 +832,13 @@ public class RedisController {
                 for (int i = 0; i < 7; i++) {
                     date2.setHours(date1.getHours() + 1);
                     RedisInfoMemory redisInfoMemory = redisLogService.getRedisMemoryByDate1(taskName, date1, date2);
-                    if (!StringUtils.isEmpty(redisInfoMemory)){
+                    if (!StringUtils.isEmpty(redisInfoMemory)) {
                         luaList.add(redisInfoMemory.getUsed_memory_lua_human());
                         rssList.add(redisInfoMemory.getUsed_memory_rss_human());
                         usedList.add(redisInfoMemory.getUsed_memory_human());
                         peakList.add(redisInfoMemory.getUsed_memory_peak_human());
                         abscissa.add(simpleDateFormat.format(redisInfoMemory.getDate()));
-                    }else {
+                    } else {
                         luaList.add(0f);
                         rssList.add(0f);
                         usedList.add(0f);
@@ -888,7 +891,7 @@ public class RedisController {
                     rssList.add(redisInfoMemory.getUsed_memory_rss_human());
                     peakList.add(redisInfoMemory.getUsed_memory_peak_human());
                 }
-            }else {
+            } else {
                 simpleDateFormat = new SimpleDateFormat("HH:00:00");
                 Long time = System.currentTimeMillis();
                 Date date1 = new Date(time);
@@ -910,13 +913,13 @@ public class RedisController {
                             simpleDateFormat.format(date1) : simpleDateFormat.format(redisInfoClients.getDate()));
 
                     RedisInfoMemory redisInfoMemory = redisLogService.getRedisMemoryByDate1(taskName, date1, date2);
-                    if (!StringUtils.isEmpty(redisInfoMemory)){
+                    if (!StringUtils.isEmpty(redisInfoMemory)) {
                         usedList.add(redisInfoMemory.getUsed_memory_human());
                         luaList.add(redisInfoMemory.getUsed_memory_lua_human());
                         rssList.add(redisInfoMemory.getUsed_memory_rss_human());
                         peakList.add(redisInfoMemory.getUsed_memory_peak_human());
                         abscissa.add(simpleDateFormat.format(redisInfoMemory.getDate()));
-                    }else {
+                    } else {
                         luaList.add(0.0f);
                         rssList.add(0.0f);
                         usedList.add(0.0f);
@@ -940,5 +943,17 @@ public class RedisController {
         modelMap.addAttribute("returnCode", returnCode);
         modelMap.addAttribute("returnMessage", returnMessage);
         return "redis_data";
+    }
+
+    // expireEvents  过期事件
+    @RequestMapping(value = "/expireEvents")
+    public String expireEvents(@RequestParam Map<String, String> reqMap, ModelMap modelMap) {
+        return "redis_expire";
+    }
+
+    // dangerousEvents  报警事件
+    @RequestMapping(value = "/dangerousEvents")
+    public String dangerousEvents(@RequestParam Map<String, String> reqMap, ModelMap modelMap) {
+        return "redis_dangerous";
     }
 }
