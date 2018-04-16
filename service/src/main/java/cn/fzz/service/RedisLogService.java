@@ -1,9 +1,6 @@
 package cn.fzz.service;
 
-import cn.fzz.bean.RedisDangerousEvent;
-import cn.fzz.bean.RedisInfoCPU;
-import cn.fzz.bean.RedisInfoClients;
-import cn.fzz.bean.RedisInfoMemory;
+import cn.fzz.bean.*;
 
 import java.util.Date;
 import java.util.List;
@@ -17,6 +14,8 @@ public interface RedisLogService {
     public int saveMemory(RedisInfoMemory redisInfoMemory);
     public int saveClients(RedisInfoClients redisInfoClients);
     public int saveEvent(RedisDangerousEvent redisDangerousEvent);
+    public int saveExpireEvent(RedisExpireEvent redisExpireEvent);
+    public List<RedisExpireEvent> getExpireEvents();
     public List<RedisInfoMemory> getSevenMemory();
     public List<RedisInfoMemory> getSevenMemoryByName(String taskName);
     public List<RedisInfoCPU> getSevenCPU();

@@ -1,4 +1,4 @@
-package cn.fzz.util;
+package cn.fzz.thread;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -10,10 +10,11 @@ import redis.clients.jedis.JedisPoolConfig;
  */
 public class Subscriber {
     public static void main(String[] args) {
-        JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost");
+        String host = "localhost";
+        JedisPool pool = new JedisPool(new JedisPoolConfig(), host);
 
         Jedis jedis = pool.getResource();
-        jedis.psubscribe(new KeyExpiredListener(), "__key*__:*");
+        jedis.psubscribe(new KeyExpiredListener(host), "__key*__:*");
 
     }
 }

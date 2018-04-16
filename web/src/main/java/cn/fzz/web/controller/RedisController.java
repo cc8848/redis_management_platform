@@ -951,9 +951,35 @@ public class RedisController {
         return "redis_expire";
     }
 
+    @RequestMapping(value = "/getExpireEvents")
+    public @ResponseBody
+    Map<String, Object> getExpireEvents(String reqJsonString, HttpServletRequest request){
+        Map<String, Object> resultMap = new HashMap<>();
+        int returnCode = 0;
+        String returnMessage = "";
+
+
+        resultMap.put("returnCode", returnCode);
+        resultMap.put("returnMessage", returnMessage);
+        return resultMap;
+    }
+
     // dangerousEvents  报警事件
     @RequestMapping(value = "/dangerousEvents")
     public String dangerousEvents(@RequestParam Map<String, String> reqMap, ModelMap modelMap) {
         return "redis_dangerous";
+    }
+
+    @RequestMapping(value = "/getDangerousEvents")
+    public @ResponseBody
+    Map<String, Object> getDangerousEvents(String reqJsonString, HttpServletRequest request){
+        Map<String, Object> resultMap = new HashMap<>();
+        int returnCode = 0;
+        String returnMessage = "";
+
+
+        resultMap.put("returnCode", returnCode);
+        resultMap.put("returnMessage", returnMessage);
+        return resultMap;
     }
 }

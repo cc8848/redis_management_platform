@@ -1,9 +1,6 @@
 package cn.fzz.dao.mapper;
 
-import cn.fzz.bean.RedisDangerousEvent;
-import cn.fzz.bean.RedisInfoCPU;
-import cn.fzz.bean.RedisInfoClients;
-import cn.fzz.bean.RedisInfoMemory;
+import cn.fzz.bean.*;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -11,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Administrator on 2018/3/18.
@@ -39,6 +37,14 @@ public interface RedisMapper {
 
     @Insert("INSERT INTO redis_dangerous_event(event_name, type, message) VALUES(#{event_name}, #{type}, #{message})")
     public int saveEvent(RedisDangerousEvent redisDangerousEvent);
+
+    @Insert("INSERT INTO redis_expire_event(event_name, server, data_type, key, value, create_time, " +
+            "resolving_time, is_resolved) VALUES(#{event_name}, #{server}, #{data_type}, #{key}, #{value}, " +
+            "#{create_time}, #{resolving_time}, #{is_resolved})")
+    public int saveExpireEvent(RedisExpireEvent redisExpireEvent);
+
+    @Select("select * from redis_expire_event order by create_time desc;")
+    public List<RedisExpireEvent> getExpireEvents();
 
     @Select("select * from redis_memory order by date desc limit 0, 7;")
     public List<RedisInfoMemory> getSevenMemory();

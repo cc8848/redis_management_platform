@@ -1,3 +1,5 @@
+CREATE DATABASE IF NOT EXISTS graduation_design DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
+
 CREATE TABLE IF NOT EXISTS `user` (
   `id`          INT UNSIGNED AUTO_INCREMENT,
   `username`    VARCHAR(20) NOT NULL,
@@ -55,12 +57,28 @@ CREATE TABLE IF NOT EXISTS `redis_clients` (
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
 
-CREATE TABLE IF NOT EXISTS `redis_dangerous_events` (
+CREATE TABLE IF NOT EXISTS `redis_dangerous_event` (
   `id`         INT UNSIGNED AUTO_INCREMENT,
   `event_name` VARCHAR(64) NOT NULL,
   `type`       VARCHAR(64) NOT NULL,
   `message`    TEXT        NOT NULL,
   `date`       TIMESTAMP    DEFAULT now(),
+  PRIMARY KEY (`id`)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
+
+CREATE TABLE IF NOT EXISTS `redis_expire_event` (
+  `id`             INT UNSIGNED AUTO_INCREMENT,
+  `event_name`     VARCHAR(64)                NOT NULL,
+  `server`         VARCHAR(64)                NOT NULL,
+  `data_type`      VARCHAR(16)                NOT NULL,
+  `key`            VARCHAR(64)                NOT NULL,
+  `value`          TEXT                       NOT NULL,
+  `create_time`    TIMESTAMP    DEFAULT now(),
+  `resolving_time` TIMESTAMP    DEFAULT now()
+  ON UPDATE CURRENT_TIMESTAMP,
+  `is_resolved`    BOOLEAN DEFAULT FALSE NOT NULL,
   PRIMARY KEY (`id`)
 )
   ENGINE = InnoDB

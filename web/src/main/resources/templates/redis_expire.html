@@ -2,13 +2,13 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
-  <link rel="stylesheet" type="text/css" href="/static/css/AdminLTE.min.css">
-  <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.css">
-  <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css">
-  <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-table.min.css">
-  <link rel="stylesheet" type="text/css" href="/static/css/daterangepicker.css">
-  <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-select.min.css">
-  <link rel="stylesheet" type="text/css" href="/static/fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" type="text/css" href="/static/css/AdminLTE.min.css"/>
+  <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.css"/>
+  <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css"/>
+  <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-table.min.css"/>
+  <link rel="stylesheet" type="text/css" href="/static/css/daterangepicker.css"/>
+  <link rel="stylesheet" type="text/css" href="/static/css/bootstrap-select.min.css"/>
+  <link rel="stylesheet" type="text/css" href="/static/fonts/font-awesome-4.7.0/css/font-awesome.min.css"/>
 
   <script src="/static/js/jquery-2.2.3.min.js"></script>
   <script src="/static/js/bootstrap.js"></script>
@@ -55,7 +55,7 @@
               <i class="fa fa-search search_icon"></i>
               <input type="text" class="form-control" id="search-content-key"
                      placeholder="key"
-                     name="searchKeywords" value="" style="padding-left:20px;border-radius: 4px;">
+                     name="searchKeywords" value="" style="padding-left:20px;border-radius: 4px;"/>
             </div>
           </div>
           <div class="btn-group" style="width:210px;">
@@ -63,11 +63,11 @@
               <i class="fa fa-search search_icon"></i>
               <input type="text" class="form-control" id="search-content-value"
                      placeholder="value"
-                     name="searchKeywords" value="" style="padding-left:20px;border-radius: 4px;">
+                     name="searchKeywords" value="" style="padding-left:20px;border-radius: 4px;"/>
             </div>
           </div>
           <div class="btn-group">
-            <select class="selectpicker" id="server" multiple data-actions-box="true" data-live-search="true"
+            <select class="selectpicker" id="server" multiple="multiple" data-actions-box="true" data-live-search="true"
                     name="server" title="选择服务器">
               <option value="1">localhost</option>
               <option value="2">2</option>
@@ -75,7 +75,8 @@
             </select>
           </div>
           <div class="btn-group">
-            <select class="selectpicker" id="data_type" multiple data-actions-box="true" data-live-search="true"
+            <select class="selectpicker" id="data_type" multiple="multiple" data-actions-box="true"
+                    data-live-search="true"
                     name="server" title="选择数据类型">
               <option value="String">String</option>
               <option value="List">List</option>
@@ -83,13 +84,13 @@
             </select>
           </div>
           <label>
-            <input id="resolved" type="checkbox">显示已确认
+            <input id="resolved" type="checkbox"/>显示已确认
           </label>
           <div class="btn-group">
             <button type="button" class="btn btn-white btn-sm" id="daterange-btn">
               <span id="dateRangeText">事件日期</span>
               <input type="hidden" name="date_range" value=" " id="id-daterange"
-                     class="toolbar-filter">
+                     class="toolbar-filter"/>
               <i class="fa fa-caret-down"></i>
             </button>
           </div>
@@ -117,7 +118,7 @@
 
     function init() {
         $table.bootstrapTable({
-            url: '',
+            url: '/redis/getExpireEvents/',
             striped: true,
             minimumCountColumns: 2,
             queryParamsType: 'limit',
@@ -185,7 +186,7 @@
                     formatter: function (value) {
                         if (value) {
                             return "<button id = \"solve_event" + value + "\" onclick=\"solve_event(" + value + ")\">确认</button>"
-                        }else {
+                        } else {
                             return "<button disabled=\"disabled\">已确认</button>"
                         }
                     }
@@ -216,7 +217,7 @@
             success: function (data) {
                 if (data["returnCode"] = 0) {
                     $("#solve_event" + event_id).attr("disabled", disabled).val("已确认");
-                }else {
+                } else {
                     alert("确认失败！\n失败信息：" + data["returnMessage"]);
                 }
             }

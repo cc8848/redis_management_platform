@@ -1,9 +1,6 @@
 package cn.fzz.service.impl;
 
-import cn.fzz.bean.RedisDangerousEvent;
-import cn.fzz.bean.RedisInfoCPU;
-import cn.fzz.bean.RedisInfoClients;
-import cn.fzz.bean.RedisInfoMemory;
+import cn.fzz.bean.*;
 import cn.fzz.dao.mapper.RedisMapper;
 import cn.fzz.service.RedisLogService;
 import org.slf4j.Logger;
@@ -44,6 +41,16 @@ public class RedisLogImpl implements RedisLogService {
     @Override
     public int saveEvent(RedisDangerousEvent redisDangerousEvent) {
         return redisMapper.saveEvent(redisDangerousEvent);
+    }
+
+    @Override
+    public int saveExpireEvent(RedisExpireEvent redisExpireEvent){
+        return redisMapper.saveExpireEvent(redisExpireEvent);
+    }
+
+    @Override
+    public List<RedisExpireEvent> getExpireEvents(){
+        return redisMapper.getExpireEvents();
     }
 
     @Override
