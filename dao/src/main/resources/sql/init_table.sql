@@ -68,13 +68,18 @@ CREATE TABLE IF NOT EXISTS `redis_dangerous_event` (
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
 
-CREATE TABLE IF NOT EXISTS `redis_expire_event` (
+CREATE TABLE IF NOT EXISTS `redis_subscriber_event` (
   `id`             INT UNSIGNED AUTO_INCREMENT,
-  `event_name`     VARCHAR(64)                NOT NULL,
-  `server`         VARCHAR(64)                NOT NULL,
-  `data_type`      VARCHAR(16)                NOT NULL,
-  `key`            VARCHAR(64)                NOT NULL,
-  `value`          TEXT                       NOT NULL,
+  `event_name`     VARCHAR(128)           NOT NULL,
+  `server`         VARCHAR(64)           NOT NULL,
+  `event_type`     VARCHAR(16)           NOT NULL,
+  `notice_type`    VARCHAR(16)           NOT NULL,
+  `key_pattern`    VARCHAR(64)           NOT NULL,
+  `pattern`        VARCHAR(64)           NOT NULL,
+  `channel`        VARCHAR(64)           NOT NULL,
+  `data_type`      VARCHAR(16)           NOT NULL,
+  `redis_key`      VARCHAR(64)           NOT NULL,
+  `redis_value`    TEXT                  NOT NULL,
   `create_time`    TIMESTAMP    DEFAULT now(),
   `resolving_time` TIMESTAMP    DEFAULT now()
   ON UPDATE CURRENT_TIMESTAMP,

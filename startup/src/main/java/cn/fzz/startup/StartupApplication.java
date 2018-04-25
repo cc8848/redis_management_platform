@@ -1,13 +1,18 @@
 package cn.fzz.startup;
 
+import cn.fzz.framework.common.Common;
+import cn.fzz.framework.redis.RedisCommon;
+import cn.fzz.framework.redis.RedisConnection;
 import cn.fzz.thread.Monitor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Bean;
+import cn.fzz.framework.redis.Subscriber;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.SpringApplication;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.util.StringUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -27,7 +32,9 @@ public class StartupApplication {
     {
         SpringApplication.run(StartupApplication.class, args);
 
-        new Monitor().run();
+        new Monitor().start();
+
+        Common.startSubscriber();
 //        // 启动的时候要注意，由于我们在controller中注入了RestTemplate，所以启动的时候需要实例化该类的一个实例
 //        @Autowired
 //        private RestTemplateBuilder builder;

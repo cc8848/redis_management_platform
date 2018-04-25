@@ -82,7 +82,7 @@ public class RedisConfigBean {
         slowlog_log_slower_than = 10000;
         slowlog_max_len = 128;
         latency_monitor_threshold = 0;
-        notify_keyspace_events = "";
+        notify_keyspace_events = "EKA";
         hash_max_ziplist_entries = 512;
         hash_max_ziplist_value = 64;
         list_max_ziplist_size = -2;

@@ -7,6 +7,7 @@ import cn.fzz.framework.common.Common;
 import cn.fzz.framework.redis.RedisCommon;
 import cn.fzz.framework.redis.RedisConnection;
 
+import cn.fzz.framework.redis.Subscriber;
 import cn.fzz.service.RedisLogService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -73,6 +74,7 @@ public class RedisController {
         return "redis_conf";
     }
 
+    // 停用
     /**
      * 接收web转过来的配置参数并转换相应格式后写入文件
      * returnCode 0--success 1--false
@@ -134,8 +136,6 @@ public class RedisController {
         modelMap.put("port", Integer.valueOf(modelMap.get("port").toString()) + 1);
         return "redis_conf";
     }
-
-    // 停用
 
     /**
      * redis进程状态
@@ -769,6 +769,7 @@ public class RedisController {
             if (period.equals("minute")) {
                 for (RedisInfoClients redisInfoClients : redisLogService.getSevenClientsByName(taskName)) {
                     clientsList.add(redisInfoClients.getConnected_clients());
+                    abscissa.add(simpleDateFormat.format(redisInfoClients.getDate()));
                 }
             } else {
                 simpleDateFormat = new SimpleDateFormat("HH:00:00");
@@ -819,6 +820,7 @@ public class RedisController {
                     rssList.add(redisInfoMemory.getUsed_memory_rss_human());
                     usedList.add(redisInfoMemory.getUsed_memory_human());
                     peakList.add(redisInfoMemory.getUsed_memory_peak_human());
+                    abscissa.add(simpleDateFormat.format(redisInfoMemory.getDate()));
                 }
             } else {
                 simpleDateFormat = new SimpleDateFormat("HH:00:00");
@@ -881,6 +883,7 @@ public class RedisController {
             if (period.equals("minute")) {
                 for (RedisInfoCPU redisInfoCPU : redisLogService.getSevenCPUByName(taskName)) {
                     sysList.add(redisInfoCPU.getUsed_cpu_sys());
+                    abscissa.add(simpleDateFormat.format(redisInfoCPU.getDate()));
                 }
                 for (RedisInfoClients redisInfoClients : redisLogService.getSevenClientsByName(taskName)) {
                     clientsList.add(redisInfoClients.getConnected_clients());
@@ -946,17 +949,50 @@ public class RedisController {
     }
 
     // expireEvents  过期事件
-    @RequestMapping(value = "/expireEvents")
-    public String expireEvents(@RequestParam Map<String, String> reqMap, ModelMap modelMap) {
-        return "redis_expire";
+    @RequestMapping(value = "/subscriberEvents")
+    public String subscriberEvents(@RequestParam Map<String, String> reqMap, ModelMap modelMap) {
+        int returnCode = 0;
+        String returnMessage = "";
+        String event_id = reqMap.get("event_id");
+        if (!StringUtils.isEmpty(event_id)){
+            returnCode =  redisLogService.solveSubscriberEvent(event_id);
+            if (returnCode == 1){
+                returnCode = 0;
+            }else {
+                returnCode = 1;
+            }
+        }
+
+        modelMap.addAttribute("returnCode", returnCode);
+        modelMap.addAttribute("returnMessage", returnMessage);
+        return "redis_subscriber";
     }
 
-    @RequestMapping(value = "/getExpireEvents")
+    @RequestMapping(value = "/getSubscriberEvents")
     public @ResponseBody
-    Map<String, Object> getExpireEvents(String reqJsonString, HttpServletRequest request){
+    Map<String, Object> getSubscriberEvents(@RequestParam Map<Object, Object> reqMap, HttpServletRequest request){
         Map<String, Object> resultMap = new HashMap<>();
         int returnCode = 0;
         String returnMessage = "";
+
+        // 取出reqMap中的有效 K V
+        Map map = new HashMap();
+        for (Object obj : reqMap.keySet()) {
+            Object value = reqMap.get(obj);
+            if (!StringUtils.isEmpty(value)) {
+                map.put(obj.toString(), value);
+            }
+        }
+
+        if (!StringUtils.isEmpty(map.get("event_type"))){
+            map.put("event_type", map.get("event_type").toString().replace(",", "','"));
+        }
+        if (!StringUtils.isEmpty(map.get("notice_type"))){
+            map.put("notice_type", map.get("notice_type").toString().replace(",", "','"));
+        }
+        List expireEvents = redisLogService.getSubscriberEventsByMap(map);
+        resultMap.put("total", 100);
+        resultMap.put("rows", expireEvents);
 
 
         resultMap.put("returnCode", returnCode);
@@ -967,19 +1003,95 @@ public class RedisController {
     // dangerousEvents  报警事件
     @RequestMapping(value = "/dangerousEvents")
     public String dangerousEvents(@RequestParam Map<String, String> reqMap, ModelMap modelMap) {
+        int returnCode = 0;
+        String returnMessage = "";
+        String event_id = reqMap.get("event_id");
+        if (!StringUtils.isEmpty(event_id)){
+            returnCode =  redisLogService.solveDangerousEvent(event_id);
+            if (returnCode == 1){
+                returnCode = 0;
+            }else {
+                returnCode = 1;
+            }
+        }
+
+        modelMap.addAttribute("returnCode", returnCode);
+        modelMap.addAttribute("returnMessage", returnMessage);
         return "redis_dangerous";
     }
 
     @RequestMapping(value = "/getDangerousEvents")
     public @ResponseBody
-    Map<String, Object> getDangerousEvents(String reqJsonString, HttpServletRequest request){
+    Map<String, Object> getDangerousEvents(@RequestParam Map<Object, Object> reqMap, HttpServletRequest request){
         Map<String, Object> resultMap = new HashMap<>();
         int returnCode = 0;
         String returnMessage = "";
 
 
+        // 取出reqMap中的有效 K V
+        Map<Object,Object> map = new HashMap<>();
+        for (Object obj : reqMap.keySet()) {
+            if (obj.toString().equals("is_resolved")){
+                if (reqMap.get(obj).toString().equals("false")){
+                    continue;
+                }
+            }
+            Object value = reqMap.get(obj);
+            if (!StringUtils.isEmpty(value)) {
+                map.put(obj.toString(), value);
+            }
+        }
+
+        if (!StringUtils.isEmpty(map.get("type"))){
+            map.put("type", map.get("type").toString().replace(",", "','"));
+        }
+
+        List dangerousEvents = redisLogService.getDangerousEventsByMap(map);
+        resultMap.put("total", 100);
+        resultMap.put("rows", dangerousEvents);
+
         resultMap.put("returnCode", returnCode);
         resultMap.put("returnMessage", returnMessage);
         return resultMap;
+    }
+
+    @RequestMapping(value = "/systemSetting")
+    public String systemSetting(@RequestParam Map<String, String> reqMap, HttpServletRequest request, ModelMap modelMap){
+        String noticeType;
+        String CPUWarningValue;
+        String MemoryWarningValue;
+        String[] keyPatterns;
+        StringBuilder keyPatternsString = new StringBuilder();
+        if (request.getMethod().toLowerCase().equals("post")) {
+            Common.stopSubscriber();
+            noticeType = reqMap.get("notice_type");
+            RedisCommon.saveString("notice_type", noticeType);
+            keyPatterns = reqMap.get("key_patterns").split("\n");
+            RedisCommon.deleteRedisByKey("key_patterns");
+            for (String keyPattern : keyPatterns) {
+                RedisCommon.saveRedisList("key_patterns", keyPattern);
+            }
+            Common.startSubscriber();
+
+            CPUWarningValue = reqMap.get("CPUWarningValue");
+            RedisCommon.saveString("CPUWarningValue", StringUtils.isEmpty(CPUWarningValue)?"" :CPUWarningValue);
+            MemoryWarningValue = reqMap.get("MemoryWarningValue");
+            RedisCommon.saveString("MemoryWarningValue", StringUtils.isEmpty(MemoryWarningValue)?"" :MemoryWarningValue);
+        }else {
+            noticeType = RedisCommon.getStringByKey("notice_type");
+            List<String> keyPatternsList = RedisCommon.getListFromRedis("key_patterns");
+            keyPatterns = new String[keyPatternsList.size()];
+            CPUWarningValue =  RedisCommon.getStringByKey("CPUWarningValue");
+            MemoryWarningValue =  RedisCommon.getStringByKey("MemoryWarningValue");
+        }
+
+        for (String keyPattern:keyPatterns){
+            keyPatternsString.append(keyPattern);
+        }
+        modelMap.addAttribute("notice_type", noticeType);
+        modelMap.addAttribute("key_patterns", keyPatternsString);
+        modelMap.addAttribute("CPUWarningValue", CPUWarningValue);
+        modelMap.addAttribute("MemoryWarningValue", MemoryWarningValue);
+        return "system_setting";
     }
 }

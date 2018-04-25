@@ -14,8 +14,13 @@ import cn.fzz.service.RedisLogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 
 import javax.annotation.PostConstruct;
+
+import static cn.fzz.framework.common.Common.netstat_anoByPort;
 
 /**
  * Created by Administrator on 2018/3/8.
@@ -40,7 +45,8 @@ public class Monitor extends Thread {
         this.redisLogService = redisLogService;
     }
 
-    public Monitor() {}
+    public Monitor() {
+    }
 
     public void run() {
         while (isWork) {
@@ -49,6 +55,11 @@ public class Monitor extends Thread {
                 Thread.sleep(3000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
+            }
+            //查找进程号
+            List<String> read = netstat_anoByPort(6379);
+            if ((read == null || read.size() == 0)) {
+                continue;
             }
             scanning();
             recordRedisInfo();
@@ -63,6 +74,7 @@ public class Monitor extends Thread {
         //新的redis任务
         List<String> configList = RedisCommon.getListFromRedis("machine1List");
         RedisCommon.deleteRedisByKey("machine1List");
+        if (StringUtils.isEmpty(configList)) return;
         while (configList.size() > 0) {
             String key = configList.get(0);
             configList.remove(key);
@@ -179,6 +191,7 @@ public class Monitor extends Thread {
         String dateString = formatter.format(currentTime);
         if (!dateString.equals(timeString)) {
             List<String> tasks = RedisCommon.getListFromRedis("alreadyList");
+            if (StringUtils.isEmpty(tasks)) return;
             for (String taskName : tasks) {     //循环取出每个服务
                 Map<String, Object> redisServiceMap = RedisCommon.getServiceByName(taskName);
                 String returnCode = redisServiceMap.get("returnCode").toString();
@@ -315,18 +328,32 @@ public class Monitor extends Thread {
                     redisLogService.saveMemory(redisInfoMemory);
                     redisLogService.saveClients(redisInfoClients);
                     RedisDangerousEvent redisDangerousEvent = new RedisDangerousEvent();
-                    if (redisInfoCPU.getUsed_cpu_sys()>1){
+                    redisDangerousEvent.setMessage(redisInfoStr);
+                    redisDangerousEvent.setServer(taskName);
+
+                    String CPUWarningValue = RedisCommon.getStringByKey("CPUWarningValue");
+                    String MemoryWarningValue = RedisCommon.getStringByKey("MemoryWarningValue");
+/*
+                    if (redisInfoCPU.getUsed_cpu_sys() > Integer.valueOf(
+                            StringUtils.isEmpty(CPUWarningValue) ? "1" : CPUWarningValue)) {
+                        Common.stopSubscriber();
                         redisDangerousEvent.setType("cpu");
                         redisDangerousEvent.setEvent_name("cpu报警");
-                        redisDangerousEvent.setMessage(redisInfoStr);
-                        redisLogService.saveEvent(redisDangerousEvent);
+                        redisLogService.saveDangerousEvent(redisDangerousEvent);
+                        RedisCommon.killRedisTaskByName(taskName, false);
+                        System.out.println("cpu报警，代号" + taskName + "\n正在关闭...");
+                        Common.startSubscriber();
                     }
-                    if (redisInfoMemory.getUsed_memory_human()>1024){
+                    if (redisInfoMemory.getUsed_memory_human() > Integer.valueOf(
+                            StringUtils.isEmpty(MemoryWarningValue) ? "1024" : MemoryWarningValue)) {
+                        Common.stopSubscriber();
                         redisDangerousEvent.setType("memory");
                         redisDangerousEvent.setEvent_name("内存报警");
-                        redisDangerousEvent.setMessage(redisInfoStr);
-                        redisLogService.saveEvent(redisDangerousEvent);
-                    }
+                        redisLogService.saveDangerousEvent(redisDangerousEvent);
+                        RedisCommon.killRedisTaskByName(taskName, false);
+                        System.out.println("内存报警，代号" + taskName + "\n正在关闭...");
+                        Common.startSubscriber();
+                    }*/
                 }
             }
         }
@@ -335,6 +362,7 @@ public class Monitor extends Thread {
     public Boolean getWork() {
         return isWork;
     }
+
     public void setWork(Boolean work) {
         isWork = work;
     }

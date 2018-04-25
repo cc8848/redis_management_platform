@@ -1,6 +1,9 @@
 package cn.fzz.framework.common;
 
 import cn.fzz.bean.common.AttributeBean;
+import cn.fzz.framework.redis.RedisCommon;
+import cn.fzz.framework.redis.RedisConnection;
+import cn.fzz.framework.redis.Subscriber;
 import org.springframework.util.StringUtils;
 
 import java.io.BufferedReader;
@@ -21,6 +24,8 @@ public class Common {
     //记录当前已使用的端口号
     private static final List<Integer> portList = new ArrayList<>();
     private static int port = 6380;
+
+    public static List<Subscriber> subscriberList = new ArrayList<>();
 
     /**
      * 校验端口号是否可用
@@ -334,5 +339,31 @@ public class Common {
     public static boolean isInteger(String str) {
         Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
         return pattern.matcher(str).matches();
+    }
+
+    public static void startSubscriber(){
+        //查找进程号
+        List<String> read = netstat_anoByPort(6379);
+        if ((read == null || read.size() == 0)) {
+            return;
+        }
+        List<Map<String, String>> redisProcesses = RedisCommon.getProcesses();
+        for (Map<String, String> redisProcess : redisProcesses) {
+            String portString = redisProcess.get("port");
+            if (StringUtils.isEmpty(portString)){
+                continue;
+            }
+            RedisConnection redisConnection = new RedisConnection(Integer.parseInt(portString));
+            if (redisConnection.ping().equals("PONG")){
+                Subscriber subscriber = new Subscriber(redisProcess.get("taskName"), redisConnection);
+                subscriber.start();
+                subscriberList.add(subscriber);
+            }
+        }
+    }
+    public static void stopSubscriber() {
+        for (Subscriber subscriber : Common.subscriberList) {
+            subscriber.stop();
+        }
     }
 }

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css"/>
+  <!--[if lt IE 9]>
+  <script src="http://cdn.static.runoob.com/libs/jquery/1.10.2/jquery.min.js"></script>
+  <![endif]-->
+  <!--[if gte IE 9]><!-->
+  <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+  <!--<![endif]-->
+  <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <!-- HTML5 Shim 和 Respond.js 用于让 IE8 支持 HTML5元素和媒体查询 -->
+  <!-- 注意： 如果通过 file://  引入 Respond.js 文件，则该文件无法起效果 -->
+  <!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+  <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+  <![endif]-->
+  <title>系统设置</title>
+</head>
+<body>
+<div class="container">
+  <form role="form" method="post">
+    <div class="row">
+      <div>
+        <h4>请选择redis内存监听的通知类型</h4>
+        <div>
+          <!--/*@thymesVar id="notice_type" type=""*/-->
+          <label class="radio-inline">
+            <input type="radio" name="notice_type" id="optionsRadios3" value="keyevent" th:checked="${notice_type}==keyspace"> 键事件通知
+          </label>
+          <label class="radio-inline">
+            <input type="radio" name="notice_type" id="optionsRadios4" value="keyspace" th:checked="${notice_type}==keyspace"> 键空间通知
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <h4>请输入redis内存监听的匹配规则(以换行分割)</h4>
+        <label>
+          <!--/*@thymesVar id="key_patterns" type=""*/-->
+          <textarea class="form-control" id="pattern" rows="3" name="key_patterns" placeholder="*"
+          th:text="${key_patterns}"></textarea>
+        </label>
+      </div>
+      <h4>请输入CPU预警值</h4>
+      <!--/*@thymesVar id="CPUWarningValue" type=""*/-->
+      <input type="text" id="firstname" name="CPUWarningValue" th:value="${CPUWarningValue}" placeholder="1">
+      <h4>请输入内存预警值</h4>
+        <!--/*@thymesVar id="MemoryWarningValue" type=""*/-->
+        <input type="text" id="" name="MemoryWarningValue" th:value="${MemoryWarningValue}" placeholder="1024">
+      <div class="checkbox">
+        <label>
+          <input type="checkbox">只记录过期事件
+        </label>
+      </div>
+      <button type="submit" class="btn btn-primary">保存</button>
+    </div>
+  </form>
+</div>
+
+</body>
+</html>

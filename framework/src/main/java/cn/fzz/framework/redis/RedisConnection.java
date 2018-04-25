@@ -3,6 +3,7 @@ package cn.fzz.framework.redis;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.JedisPubSub;
 
 import java.util.List;
 import java.util.Map;
@@ -339,5 +340,13 @@ public class RedisConnection {
             return count;
         }
         return null;
+    }
+
+    public void psubscribe(JedisPubSub jedisPubSub, String... patterns){
+        Jedis jedis = getJedis();
+        if (jedis != null){
+            jedis.psubscribe(jedisPubSub, patterns);
+            jedis.close();
+        }
     }
 }

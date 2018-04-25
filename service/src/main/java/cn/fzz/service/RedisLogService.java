@@ -4,6 +4,7 @@ import cn.fzz.bean.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Administrator on 2018/3/18.
@@ -13,9 +14,13 @@ public interface RedisLogService {
     public int saveCPU (RedisInfoCPU redisInfoCPU);
     public int saveMemory(RedisInfoMemory redisInfoMemory);
     public int saveClients(RedisInfoClients redisInfoClients);
-    public int saveEvent(RedisDangerousEvent redisDangerousEvent);
-    public int saveExpireEvent(RedisExpireEvent redisExpireEvent);
-    public List<RedisExpireEvent> getExpireEvents();
+    public int saveDangerousEvent(RedisDangerousEvent redisDangerousEvent);
+    public int saveSubscriberEvent(RedisSubscriberEvent redisExpireEvent);
+    public int solveSubscriberEvent(String event_id);
+    public int solveDangerousEvent(String event_id);
+    public List<RedisSubscriberEvent> getSubscriberEventsByMap(Map map);
+    public List<RedisDangerousEvent> getDangerousEventsByMap(Map map);
+    public List<RedisSubscriberEvent> getSubscriberEvents();
     public List<RedisInfoMemory> getSevenMemory();
     public List<RedisInfoMemory> getSevenMemoryByName(String taskName);
     public List<RedisInfoCPU> getSevenCPU();

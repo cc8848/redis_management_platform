@@ -1,4 +1,5 @@
-<html>
+<!DOCTYPE html>
+<html style="height: 100%" xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
@@ -41,7 +42,7 @@
       line-height: 1.6;
     }
   </style>
-  <title>过期事件</title>
+  <title>内存监听</title>
 </head>
 
 <body>
@@ -62,25 +63,24 @@
             <div class="input-group">
               <i class="fa fa-search search_icon"></i>
               <input type="text" class="form-control" id="search-content-value"
-                     placeholder="value"
+                     placeholder="server"
                      name="searchKeywords" value="" style="padding-left:20px;border-radius: 4px;"/>
             </div>
           </div>
           <div class="btn-group">
-            <select class="selectpicker" id="server" multiple="multiple" data-actions-box="true" data-live-search="true"
-                    name="server" title="选择服务器">
-              <option value="1">localhost</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
+            <select class="selectpicker" id="notice_type" multiple="multiple" data-actions-box="true"
+                    data-live-search="true"
+                    name="notice_type" title="选择通知类型">
+              <option value="keyspace">键空间通知</option>
+              <option value="keyevent">键事件通知</option>
             </select>
           </div>
           <div class="btn-group">
-            <select class="selectpicker" id="data_type" multiple="multiple" data-actions-box="true"
-                    data-live-search="true"
-                    name="server" title="选择数据类型">
-              <option value="String">String</option>
-              <option value="List">List</option>
-              <option value="Hash">Hash</option>
+            <select class="selectpicker" id="event_type" multiple="multiple" data-actions-box="true" data-live-search="true"
+                    name="event_type" title="选择事件类型">
+              <option value="expired">过期事件</option>
+              <option value="set">增改事件</option>
+              <option value="del">删除事件</option>
             </select>
           </div>
           <label>
@@ -118,7 +118,7 @@
 
     function init() {
         $table.bootstrapTable({
-            url: '/redis/getExpireEvents/',
+            url: '/redis/getSubscriberEvents/',
             striped: true,
             minimumCountColumns: 2,
             queryParamsType: 'limit',
@@ -138,31 +138,47 @@
             columns: [
                 {
                     field: 'server',
-                    title: '服务器',
+                    title: '服务名称',
                     align: 'center',
                     valign: 'middle',
-                    width: '11%',
+                    width: '1vw',
                     sortable: true
                 },
                 {
-                    field: 'data_type',
-                    title: '数据类型',
+                    field: 'notice_type',
+                    title: '通知类型',
+                    align: 'center',
+                    valign: 'middle',
+                    width: '1vw',
+                    sortable: true
+                },
+                {
+                    field: 'event_type',
+                    title: '事件类型',
+                    align: 'center',
+                    valign: 'middle',
+                    width: '1vw',
+                    sortable: true
+                },
+                {
+                    field: 'pattern',
+                    title: 'pattern',
                     align: 'center',
                     width: '15%',
                     valign: 'middle',
                     sortable: true
                 },
                 {
-                    field: 'key',
+                    field: 'channel',
+                    title: 'channel',
+                    align: 'center',
+                    width: '15%',
+                    valign: 'middle',
+                    sortable: true
+                },
+                {
+                    field: 'redis_key',
                     title: 'key',
-                    align: 'center',
-                    width: '15%',
-                    valign: 'middle',
-                    sortable: true
-                },
-                {
-                    field: 'value',
-                    title: 'value',
                     align: 'center',
                     width: '15%',
                     valign: 'middle'
@@ -174,20 +190,41 @@
                     valign: 'middle',
                     width: '22%',
                     formatter: function (value) {
-                        return '<span class="table_title_name" title="' + value + '">' + value + '</span>';
+                        Date.prototype.format = function(fmt) {
+                            var o = {
+                                "M+" : this.getMonth()+1,                 //月份
+                                "d+" : this.getDate(),                    //日
+                                "h+" : this.getHours(),                   //小时
+                                "m+" : this.getMinutes(),                 //分
+                                "s+" : this.getSeconds(),                 //秒
+                                "q+" : Math.floor((this.getMonth()+3)/3), //季度
+                                "S"  : this.getMilliseconds()             //毫秒
+                            };
+                            if(/(y+)/.test(fmt)) {
+                                fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length));
+                            }
+                            for(var k in o) {
+                                if(new RegExp("("+ k +")").test(fmt)){
+                                    fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
+                                }
+                            }
+                            return fmt;
+                        };
+                        return new Date(value).format("yyyy-MM-dd hh:mm:ss");
                     }
                 },
                 {
-                    field: 'resolved',
+                    field: 'is_resolved',
                     title: '确认',
                     align: 'center',
                     valign: 'middle',
                     width: '22%',
-                    formatter: function (value) {
+                    formatter: function (value, row, index) {
                         if (value) {
-                            return "<button id = \"solve_event" + value + "\" onclick=\"solve_event(" + value + ")\">确认</button>"
-                        } else {
                             return "<button disabled=\"disabled\">已确认</button>"
+                        } else {
+                            return "<button id = \"solve_event" + value + "\" onclick=\"solve_event(" + row.event_id +
+                                ")\">确认</button>"
                         }
                     }
                 }
@@ -208,7 +245,7 @@
 
     function solve_event(event_id) {
         $.ajax({
-            url: "/redis/expireEvents",
+            url: "/redis/subscriberEvents",
             type: 'POST',
             data: {
                 event_id: event_id
@@ -230,9 +267,11 @@
 
     function queryParams(params) {
         params['key'] = $('#search-content-key').val();
-        params['value'] = $('#search-content-value').val();
-        params['server'] = $('#server').val();
-        params['data_type'] = $('#data_type').val();
+        params['server'] = $('#search-content-value').val();
+        var tmp = $('#event_type').val();
+        params['event_type'] = tmp === null?"":tmp.join(",");
+        tmp = $('#notice_type').val();
+        params['notice_type'] = tmp === null?"":tmp.join(",");
         params['resolved'] = document.getElementById("resolved").checked;
         params['date_range'] = $('#id-date_range').val();
         return params;

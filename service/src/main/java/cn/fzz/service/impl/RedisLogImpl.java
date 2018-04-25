@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Administrator on 2018/3/18.
@@ -39,18 +40,38 @@ public class RedisLogImpl implements RedisLogService {
     }
 
     @Override
-    public int saveEvent(RedisDangerousEvent redisDangerousEvent) {
-        return redisMapper.saveEvent(redisDangerousEvent);
+    public int saveDangerousEvent(RedisDangerousEvent redisDangerousEvent) {
+        return redisMapper.saveDangerousEvent(redisDangerousEvent);
     }
 
     @Override
-    public int saveExpireEvent(RedisExpireEvent redisExpireEvent){
-        return redisMapper.saveExpireEvent(redisExpireEvent);
+    public int saveSubscriberEvent(RedisSubscriberEvent redisExpireEvent){
+        return redisMapper.saveSubscriberEvent(redisExpireEvent);
     }
 
     @Override
-    public List<RedisExpireEvent> getExpireEvents(){
-        return redisMapper.getExpireEvents();
+    public int solveSubscriberEvent(String event_id){
+        return redisMapper.solveSubscriberEvent(event_id);
+    }
+
+    @Override
+    public int solveDangerousEvent(String event_id){
+        return redisMapper.solveDangerousEvent(event_id);
+    }
+
+    @Override
+    public List<RedisSubscriberEvent> getSubscriberEvents(){
+        return redisMapper.getSubscriberEvents();
+    }
+
+    @Override
+    public List<RedisSubscriberEvent> getSubscriberEventsByMap(Map map){
+        return redisMapper.getSubscriberEventsByMap(map);
+    }
+
+    @Override
+    public List<RedisDangerousEvent> getDangerousEventsByMap(Map map){
+        return redisMapper.getDangerousEventsByMap(map);
     }
 
     @Override
