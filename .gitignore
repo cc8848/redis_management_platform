@@ -25,3 +25,6 @@ conf_dev
 
 # DataBase
 *.rdb
+
+# log
+logs/

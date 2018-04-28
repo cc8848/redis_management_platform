@@ -1,6 +1,8 @@
 package cn.fzz.service;
 
 import cn.fzz.bean.*;
+import cn.fzz.bean.filter.DangerousEventFilter;
+import cn.fzz.bean.filter.SubscriberEventFilter;
 
 import java.util.Date;
 import java.util.List;
@@ -20,6 +22,10 @@ public interface RedisLogService {
     public int solveDangerousEvent(String event_id);
     public List<RedisSubscriberEvent> getSubscriberEventsByMap(Map map);
     public List<RedisDangerousEvent> getDangerousEventsByMap(Map map);
+    public List<SubscriberEventFilter> getSubscriberEventsByFilter(SubscriberEventFilter subscriberEventFilter);
+    public int getSubscriberEventsCountByFilter(SubscriberEventFilter subscriberEventFilter);
+    public List<RedisDangerousEvent> getDangerousEventsByFilter(DangerousEventFilter dangerousEventFilter);
+    public int getDangerousEventsCountByFilter(DangerousEventFilter dangerousEventFilter);
     public List<RedisSubscriberEvent> getSubscriberEvents();
     public List<RedisInfoMemory> getSevenMemory();
     public List<RedisInfoMemory> getSevenMemoryByName(String taskName);

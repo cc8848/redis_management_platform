@@ -1,6 +1,8 @@
 package cn.fzz.service.impl;
 
 import cn.fzz.bean.*;
+import cn.fzz.bean.filter.DangerousEventFilter;
+import cn.fzz.bean.filter.SubscriberEventFilter;
 import cn.fzz.dao.mapper.RedisMapper;
 import cn.fzz.service.RedisLogService;
 import org.slf4j.Logger;
@@ -72,6 +74,26 @@ public class RedisLogImpl implements RedisLogService {
     @Override
     public List<RedisDangerousEvent> getDangerousEventsByMap(Map map){
         return redisMapper.getDangerousEventsByMap(map);
+    }
+
+    @Override
+    public List<SubscriberEventFilter> getSubscriberEventsByFilter(SubscriberEventFilter subscriberEventFilter) {
+        return redisMapper.getSubscriberEventsByFilter(subscriberEventFilter);
+    }
+
+    @Override
+    public int getSubscriberEventsCountByFilter(SubscriberEventFilter subscriberEventFilter) {
+        return redisMapper.getSubscriberEventsCountByFilter(subscriberEventFilter);
+    }
+
+    @Override
+    public List<RedisDangerousEvent> getDangerousEventsByFilter(DangerousEventFilter dangerousEventFilter){
+        return redisMapper.getDangerousEventsByFilter(dangerousEventFilter);
+    }
+
+    @Override
+    public int getDangerousEventsCountByFilter(DangerousEventFilter dangerousEventFilter){
+        return redisMapper.getDangerousEventsCountByFilter(dangerousEventFilter);
     }
 
     @Override

@@ -34,7 +34,7 @@ public class StartupApplication {
 
         new Monitor().start();
 
-        Common.startSubscriber();
+//        Common.startSubscriber();
 //        // 启动的时候要注意，由于我们在controller中注入了RestTemplate，所以启动的时候需要实例化该类的一个实例
 //        @Autowired
 //        private RestTemplateBuilder builder;

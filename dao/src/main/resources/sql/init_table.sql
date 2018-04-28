@@ -58,11 +58,15 @@ CREATE TABLE IF NOT EXISTS `redis_clients` (
   DEFAULT CHARSET = utf8;
 
 CREATE TABLE IF NOT EXISTS `redis_dangerous_event` (
-  `id`         INT UNSIGNED AUTO_INCREMENT,
-  `event_name` VARCHAR(64) NOT NULL,
-  `type`       VARCHAR(64) NOT NULL,
-  `message`    TEXT        NOT NULL,
-  `date`       TIMESTAMP    DEFAULT now(),
+  `id`             INT UNSIGNED AUTO_INCREMENT,
+  `event_name`     VARCHAR(64)           NOT NULL,
+  `server`         VARCHAR(64)           NOT NULL,
+  `type`           VARCHAR(64)           NOT NULL,
+  `message`        TEXT                  NOT NULL,
+  `date`           TIMESTAMP    DEFAULT now(),
+  `resolving_time` TIMESTAMP    DEFAULT now()
+  ON UPDATE CURRENT_TIMESTAMP,
+  `is_resolved`    BOOLEAN DEFAULT FALSE NOT NULL,
   PRIMARY KEY (`id`)
 )
   ENGINE = InnoDB

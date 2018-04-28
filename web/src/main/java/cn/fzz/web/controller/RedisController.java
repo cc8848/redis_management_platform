@@ -3,12 +3,15 @@ package cn.fzz.web.controller;
 import cn.fzz.bean.RedisInfoCPU;
 import cn.fzz.bean.RedisInfoClients;
 import cn.fzz.bean.RedisInfoMemory;
+import cn.fzz.bean.filter.DangerousEventFilter;
+import cn.fzz.bean.filter.SubscriberEventFilter;
 import cn.fzz.framework.common.Common;
 import cn.fzz.framework.redis.RedisCommon;
 import cn.fzz.framework.redis.RedisConnection;
 
-import cn.fzz.framework.redis.Subscriber;
 import cn.fzz.service.RedisLogService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.StringUtils;
@@ -27,7 +30,7 @@ import java.util.*;
 @RequestMapping("/redis")
 public class RedisController {
     private final RedisLogService redisLogService;
-
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
     public RedisController(RedisLogService redisLogService) {
         this.redisLogService = redisLogService;
     }
@@ -976,22 +979,62 @@ public class RedisController {
         String returnMessage = "";
 
         // 取出reqMap中的有效 K V
+        SubscriberEventFilter subscriberEventFilter = new SubscriberEventFilter();
         Map map = new HashMap();
         for (Object obj : reqMap.keySet()) {
-            Object value = reqMap.get(obj);
-            if (!StringUtils.isEmpty(value)) {
-                map.put(obj.toString(), value);
+            if (obj.toString().equals("key")){
+                Object value = reqMap.get(obj);
+                if (!StringUtils.isEmpty(value)) {
+                    subscriberEventFilter.setRedis_key(value.toString());
+                }
+            }
+
+            if (obj.toString().equals("server")){
+                Object value = reqMap.get(obj);
+                if (!StringUtils.isEmpty(value)) {
+                    subscriberEventFilter.setServer(value.toString());
+                }
+            }
+
+            if (obj.toString().equals("event_type")){
+                Object value = reqMap.get(obj);
+                if (!StringUtils.isEmpty(value)) {
+                    subscriberEventFilter.setEvent_type_list(Arrays.asList(value.toString().split(",")));
+                }
+            }
+
+            if (obj.toString().equals("notice_type")){
+                Object value = reqMap.get(obj);
+                if (!StringUtils.isEmpty(value)) {
+                    subscriberEventFilter.setNotice_type_list(Arrays.asList(value.toString().split(",")));
+                }
+            }
+
+            if (obj.toString().equals("is_resolved")){
+                Object value = reqMap.get(obj);
+                if (!StringUtils.isEmpty(value)) {
+                    if (value.toString().equals("true"))
+                        subscriberEventFilter.setIs_resolved(true);
+                }
+            }
+
+            if (obj.toString().equals("start_date")){
+                Object value = reqMap.get(obj);
+                if (!StringUtils.isEmpty(value)) {
+                    subscriberEventFilter.setCreate_time_start(value.toString());
+                }
+            }
+
+            if (obj.toString().equals("end_date")){
+                Object value = reqMap.get(obj);
+                if (!StringUtils.isEmpty(value)) {
+                    subscriberEventFilter.setCreate_time_end(value.toString());
+                }
             }
         }
 
-        if (!StringUtils.isEmpty(map.get("event_type"))){
-            map.put("event_type", map.get("event_type").toString().replace(",", "','"));
-        }
-        if (!StringUtils.isEmpty(map.get("notice_type"))){
-            map.put("notice_type", map.get("notice_type").toString().replace(",", "','"));
-        }
-        List expireEvents = redisLogService.getSubscriberEventsByMap(map);
-        resultMap.put("total", 100);
+        List expireEvents = redisLogService.getSubscriberEventsByFilter(subscriberEventFilter);
+        resultMap.put("total", redisLogService.getSubscriberEventsCountByFilter(subscriberEventFilter));
         resultMap.put("rows", expireEvents);
 
 
@@ -1027,29 +1070,55 @@ public class RedisController {
         int returnCode = 0;
         String returnMessage = "";
 
-
         // 取出reqMap中的有效 K V
-        Map<Object,Object> map = new HashMap<>();
+        DangerousEventFilter dangerousEventFilter = new DangerousEventFilter();
         for (Object obj : reqMap.keySet()) {
-            if (obj.toString().equals("is_resolved")){
-                if (reqMap.get(obj).toString().equals("false")){
-                    continue;
+            if (obj.toString().equals("server")){
+                Object value = reqMap.get(obj);
+                if (!StringUtils.isEmpty(value)) {
+                    dangerousEventFilter.setServer(value.toString());
                 }
             }
-            Object value = reqMap.get(obj);
-            if (!StringUtils.isEmpty(value)) {
-                map.put(obj.toString(), value);
+
+            if (obj.toString().equals("message")){
+                Object value = reqMap.get(obj);
+                if (!StringUtils.isEmpty(value)) {
+                    dangerousEventFilter.setMessage(value.toString());
+                }
+            }
+
+            if (obj.toString().equals("type")){
+                Object value = reqMap.get(obj);
+                if (!StringUtils.isEmpty(value)) {
+                    dangerousEventFilter.setType_list(Arrays.asList(value.toString().split(",")));
+                }
+            }
+
+            if (obj.toString().equals("is_resolved")){
+                Object value = reqMap.get(obj);
+                if (!StringUtils.isEmpty(value)) {
+                    dangerousEventFilter.setIs_resolved(value.toString().equals("true"));
+                }
+            }
+
+            if (obj.toString().equals("start_date")){
+                Object value = reqMap.get(obj);
+                if (!StringUtils.isEmpty(value)) {
+                    dangerousEventFilter.setDate_start(value.toString());
+                }
+            }
+
+            if (obj.toString().equals("end_date")){
+                Object value = reqMap.get(obj);
+                if (!StringUtils.isEmpty(value)) {
+                    dangerousEventFilter.setDate_end(value.toString());
+                }
             }
         }
+        List dangerousEvents = redisLogService.getDangerousEventsByFilter(dangerousEventFilter);
 
-        if (!StringUtils.isEmpty(map.get("type"))){
-            map.put("type", map.get("type").toString().replace(",", "','"));
-        }
-
-        List dangerousEvents = redisLogService.getDangerousEventsByMap(map);
-        resultMap.put("total", 100);
+        resultMap.put("total", redisLogService.getDangerousEventsCountByFilter(dangerousEventFilter));
         resultMap.put("rows", dangerousEvents);
-
         resultMap.put("returnCode", returnCode);
         resultMap.put("returnMessage", returnMessage);
         return resultMap;

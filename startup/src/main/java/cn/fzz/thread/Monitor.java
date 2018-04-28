@@ -57,12 +57,12 @@ public class Monitor extends Thread {
                 e.printStackTrace();
             }
             //查找进程号
-            List<String> read = netstat_anoByPort(6379);
-            if ((read == null || read.size() == 0)) {
-                continue;
-            }
-            scanning();
-            recordRedisInfo();
+//            List<String> read = netstat_anoByPort(6379);
+//            if ((read == null || read.size() == 0)) {
+//                continue;
+//            }
+//            scanning();
+//            recordRedisInfo();
         }
     }
 
