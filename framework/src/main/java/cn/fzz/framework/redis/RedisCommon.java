@@ -4,6 +4,8 @@ import cn.fzz.framework.common.Common;
 import cn.fzz.bean.RedisConfigBean;
 import cn.fzz.bean.common.AttributeBean;
 import cn.fzz.util.RedisUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 import java.io.FileWriter;
@@ -16,6 +18,8 @@ import java.util.*;
  * Desc:
  */
 public class RedisCommon {
+    private static Logger logger = LoggerFactory.getLogger(RedisCommon.class);
+
     public static String getStringByKey(String key) {
         return RedisUtil.getStringByKey(key);
     }
@@ -178,6 +182,7 @@ public class RedisCommon {
             return true;
         } catch (IOException e) {
             e.printStackTrace();
+            logger.error(Arrays.toString(e.getStackTrace()));
             return false;
         }
     }

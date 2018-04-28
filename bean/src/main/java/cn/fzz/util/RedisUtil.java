@@ -1,15 +1,15 @@
 package cn.fzz.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public final class RedisUtil {
+    private static Logger logger = LoggerFactory.getLogger(RedisUtil.class);
 
     //Redis服务器IP
     private static String ADDR = "127.0.0.1";
@@ -56,6 +56,7 @@ public final class RedisUtil {
             initLocalhost();
         } catch (Exception e) {
             e.printStackTrace();
+            logger.error(Arrays.toString(e.getStackTrace()));
         }
     }
 
@@ -69,6 +70,7 @@ public final class RedisUtil {
             return jedisPool != null?jedisPool.getResource(): null;
         } catch (Exception e) {
             e.printStackTrace();
+            logger.error(Arrays.toString(e.getStackTrace()));
             return null;
         }
     }

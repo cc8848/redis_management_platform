@@ -11,6 +11,8 @@ import cn.fzz.framework.common.Common;
 import cn.fzz.framework.redis.RedisCommon;
 import cn.fzz.framework.redis.RedisConnection;
 import cn.fzz.service.RedisLogService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -28,6 +30,7 @@ import static cn.fzz.framework.common.Common.netstat_anoByPort;
  */
 @Component
 public class Monitor extends Thread {
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
     private Boolean isWork = true;
     private static String timeString = "";
     private static RedisLogService redisLogService;
@@ -55,20 +58,21 @@ public class Monitor extends Thread {
                 Thread.sleep(3000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                logger.error(Arrays.toString(e.getStackTrace()));
             }
             //查找进程号
-//            List<String> read = netstat_anoByPort(6379);
-//            if ((read == null || read.size() == 0)) {
-//                continue;
-//            }
-//            scanning();
-//            recordRedisInfo();
+            List<String> read = netstat_anoByPort(6379);
+            if ((read == null || read.size() == 0)) {
+                continue;
+            }
+            scanning();
+            recordRedisInfo();
         }
     }
 
-    private static void scanning() {
+    private void scanning() {
         Map<String, String> resultMap;
-        System.out.println(new SimpleDateFormat("E yyyy.MM.dd 'at' hh:mm:ss a zzz").format(new Date()) +
+        logger.info(new SimpleDateFormat("E yyyy.MM.dd 'at' hh:mm:ss a zzz").format(new Date()) +
                 "\tmachine1正在执行扫描任务...");
 
         //新的redis任务
@@ -80,18 +84,18 @@ public class Monitor extends Thread {
             configList.remove(key);
             Map<String, String> map = RedisCommon.getRedisHashAll(key);
             if (!StringUtils.isEmpty(map)) {
-                System.out.println("成功接收" + key + "， 正在启动redis...\nconfig关键参数：" + map);
+                logger.info("成功接收" + key + "， 正在启动redis...\nconfig关键参数：" + map);
                 map.put("redisTaskName", key);
                 resultMap = createRedis(map, false);
                 if (resultMap.get("returnCode").equals("0")) {
                     RedisCommon.saveRedisList("alreadyList", key);
-                    System.out.println(key + "已启动！");
+                    logger.info(key + "已启动！");
                 } else {
                     Map<String, String> errorMap = new HashMap<>();
                     errorMap.put(key, resultMap.get("error"));
                     RedisCommon.saveRedisList("failedList", key);
                     RedisCommon.saveRedisHash("failedLog", errorMap);
-                    System.out.println(key + resultMap.get("error"));
+                    logger.info(key + resultMap.get("error"));
                 }
             }
             RedisCommon.deleteRedisByKey(key);
@@ -105,19 +109,19 @@ public class Monitor extends Thread {
             restartList.remove(key);
             Map<String, String> map = RedisCommon.getRedisHashAll(key + "State");
             if (!StringUtils.isEmpty(map)) {
-                System.out.println("成功接收到重启任务， 代号" + key + "\n正在启动redis...\nconfig关键参数：" + map);
+                logger.info("成功接收到重启任务， 代号" + key + "\n正在启动redis...\nconfig关键参数：" + map);
                 map.put("redisTaskName", key);
                 resultMap = createRedis(map, true);
                 if (resultMap.get("returnCode").equals("0")) {
                     Map<String, String> map1 = new HashMap<>();
                     map1.put("returnCode", "0");
                     RedisCommon.saveRedisHash("switchResultHash", map1);
-                    System.out.println(key + "已重新启动！");
+                    logger.info(key + "已重新启动！");
                 } else {
                     Map<String, String> map1 = new HashMap<>();
                     map1.put("returnCode", "1");
                     RedisCommon.saveRedisHash("switchResultHash", map1);
-                    System.out.println(key + resultMap.get("error"));
+                    logger.info(key + resultMap.get("error"));
                 }
             }
         }
@@ -129,17 +133,17 @@ public class Monitor extends Thread {
             String key = stopList.get(0);
             stopList.remove(key);
             if (!StringUtils.isEmpty(key)) {
-                System.out.println("成功接收到关闭任务， 代号" + key + "\n正在关闭...");
+                logger.info("成功接收到关闭任务， 代号" + key + "\n正在关闭...");
                 RedisCommon.killRedisTaskByName(key, false);
                 Map<String, String> map1 = new HashMap<>();
                 map1.put(key, "0");
                 RedisCommon.saveRedisHash("switchResultHash", map1);
-                System.out.println(key + "已关闭！");
+                logger.info(key + "已关闭！");
             }
         }
     }
 
-    private static Map<String, String> createRedis(Map<String, String> config, Boolean isRestart) {
+    private Map<String, String> createRedis(Map<String, String> config, Boolean isRestart) {
         Map<String, String> resultMap = new HashMap<>();
 
         //若存在相同编号的任务， 则杀死旧任务

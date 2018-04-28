@@ -223,7 +223,7 @@ public class RedisController {
                         hashList.add(map);
                         break;
                     default:
-                        System.out.println("未匹配的数据类型--" + type);
+                        logger.info("未匹配的数据类型--" + type);
                 }
             }
         }
@@ -676,18 +676,19 @@ public class RedisController {
         Long time = System.currentTimeMillis();
         while (!RedisCommon.hExists("switchResultHash", taskName.toString())) {
             if (System.currentTimeMillis() - time > 3000) {
-                System.out.println("获取返回结果超时！");
+                logger.info("获取返回结果超时！");
                 returnCode = "1";
                 returnMessage = "Timeout !";
                 break;
             }
-            System.out.println("正在等待服务器" + taskName.toString() + "的返回结果...");
+            logger.info("正在等待服务器" + taskName.toString() + "的返回结果...");
 
             try {
                 //睡3秒
                 Thread.sleep(300);
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                logger.error(Arrays.toString(e.getStackTrace()));
             }
         }
 

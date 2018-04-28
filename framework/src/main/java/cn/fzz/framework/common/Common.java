@@ -4,6 +4,8 @@ import cn.fzz.bean.common.AttributeBean;
 import cn.fzz.framework.redis.RedisCommon;
 import cn.fzz.framework.redis.RedisConnection;
 import cn.fzz.framework.redis.Subscriber;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 import java.io.BufferedReader;
@@ -21,6 +23,7 @@ import java.util.regex.Pattern;
  * Desc:
  */
 public class Common {
+    private static Logger logger = LoggerFactory.getLogger(Common.class);
     //记录当前已使用的端口号
     private static final List<Integer> portList = new ArrayList<>();
     private static int port = 6380;
@@ -34,14 +37,11 @@ public class Common {
      * @return
      */
     public static Integer checkPort(Object object) {
-        System.out.println(object);
         if (StringUtils.isEmpty(object)) {  //如果未传入端口号， 则自动生成
-            System.out.println("if");
             List<String> readPort;
             synchronized(portList) {
                 do {
                     while (portList.indexOf(port) >= 0) {
-                        System.out.println(portList + "\n" + port);
                         port++;
                     }
                     readPort = netstat_anoByPort(port);
@@ -114,6 +114,7 @@ public class Common {
             value = m.invoke(bean);     //调用getter方法获取属性值
         } catch (Exception e) {
             e.printStackTrace();
+            logger.error(Arrays.toString(e.getStackTrace()));
         }
 
         return new AttributeBean(type, name, value);
@@ -132,6 +133,7 @@ public class Common {
             Object invoke = m.invoke(bean, value);//调用setter方法
         } catch (Exception e) {
             e.printStackTrace();
+            logger.error(Arrays.toString(e.getStackTrace()));
         }
     }
 */
@@ -152,6 +154,7 @@ public class Common {
             return pb.start();
         } catch (IOException e) {
             e.printStackTrace();
+            logger.error(Arrays.toString(e.getStackTrace()));
             return null;
         }
     }
@@ -165,12 +168,12 @@ public class Common {
         //查找进程号
         List<String> read = netstat_anoByPort(p);
         if ((read == null || read.size() == 0)) {
-            System.out.println("找不到该端口的进程");
+            logger.info("找不到该端口的进程");
         } else {
             for (String string : read) {
-                System.out.println(string);
+                logger.info(string);
             }
-            System.out.println("找到" + read.size() + "个进程，正在准备清理");
+            logger.info("找到" + read.size() + "个进程，正在准备清理");
             killProcess(read);
         }
         removePort(p);
@@ -184,6 +187,7 @@ public class Common {
             return read(inputStream, p);
         } catch (IOException e) {
             e.printStackTrace();
+            logger.error(Arrays.toString(e.getStackTrace()));
             return null;
         }
     }
@@ -252,14 +256,17 @@ public class Common {
             try {
                 linePort = Integer.parseInt(find);
             } catch (NumberFormatException e) {
-                System.out.println("查找到错误的端口:" + find);
+                logger.info("查找到错误的端口:" + find);
                 e.printStackTrace();
+                logger.error(Arrays.toString(e.getStackTrace()));
                 return false;
             }
             return linePort == port;
         } else {
-            System.out.println("matcher.find()失败！");
-            new Exception("matcher.find()失败！").printStackTrace();
+            logger.info("matcher.find()失败！");
+            Exception e = new Exception("matcher.find()失败！");
+            e.printStackTrace();
+            logger.error(Arrays.toString(e.getStackTrace()));
             return false;
         }
     }
@@ -280,7 +287,7 @@ public class Common {
                 pid = Integer.parseInt(pidStr);
                 pidSet.add(pid);
             } catch (NumberFormatException e) {
-                System.out.println("获取的进程号错误:" + pidStr);
+                logger.info("获取的进程号错误:" + pidStr);
             }
         }
         killWithPid(pidSet);
@@ -297,9 +304,10 @@ public class Common {
                 Process process = Runtime.getRuntime().exec("taskkill /F /pid " + pid + "");
                 InputStream inputStream = process.getInputStream();
                 String txt = readTxt(inputStream, "GBK");
-                System.out.println(txt);
+                logger.info(txt);
             } catch (IOException e) {
                 e.printStackTrace();
+                logger.error(Arrays.toString(e.getStackTrace()));
             }
         }
     }

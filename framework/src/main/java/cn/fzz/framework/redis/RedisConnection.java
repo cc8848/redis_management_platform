@@ -1,10 +1,13 @@
 package cn.fzz.framework.redis;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisPubSub;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +18,7 @@ import java.util.Set;
  */
 
 public class RedisConnection {
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     //Redis服务器IP
     private String addr = "127.0.0.1";
@@ -72,6 +76,7 @@ public class RedisConnection {
             jedisPool = new JedisPool(config, addr, port, timeout);
         } catch (Exception e) {
             e.printStackTrace();
+            logger.error(Arrays.toString(e.getStackTrace()));
         }
     }
 
