@@ -10,6 +10,7 @@ package cn.fzz.dao.config;
 
 import javax.sql.DataSource;
 import org.mybatis.spring.SqlSessionFactoryBean;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +33,7 @@ public class MyBatisConfig
 {
     @Bean
     @ConditionalOnMissingBean //当容器里没有指定的Bean的情况下创建该对象
-    public SqlSessionFactoryBean sqlSessionFactory(DataSource dataSource) {
+    public SqlSessionFactoryBean sqlSessionFactory(@Qualifier("dataSource") DataSource dataSource) {
         SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
         // 设置数据源
         sqlSessionFactoryBean.setDataSource(dataSource);

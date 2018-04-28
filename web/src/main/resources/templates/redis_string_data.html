@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css"/>
+  <!--[if lt IE 9]>
+  <script src="http://cdn.static.runoob.com/libs/jquery/1.10.2/jquery.min.js"></script>
+  <![endif]-->
+  <!--[if gte IE 9]><!-->
+  <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+  <!--<![endif]-->
+  <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <!-- HTML5 Shim 和 Respond.js 用于让 IE8 支持 HTML5元素和媒体查询 -->
+  <!-- 注意： 如果通过 file://  引入 Respond.js 文件，则该文件无法起效果 -->
+  <!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+  <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+  <![endif]-->
+
+  <script type="text/javascript" src="/static/js/redis_data.js"></script>
+
+  <title>string data</title>
+</head>
+<body>
+<div class="container">
+  <!--/*@thymesVar id="returnCode" type=""*/-->
+  <input type="hidden" id="returnCode" th:value="${returnCode}"/>
+  <!--/*@thymesVar id="message" type=""*/-->
+  <input type="hidden" id="message" th:value="${message}"/>
+
+  <div class="row">
+    <form role="form">
+      <div class="form-group">
+        <label>Please select redis: </label>
+        <label>
+          <select class="form-control" onchange="linkToDetail(this.options[this.selectedIndex].text, '0')">
+            <!--/*@thymesVar id="alreadyList" type=""*/-->
+            <!--/*@thymesVar id="taskName" type=""*/-->
+            <option th:each="collect,iterStat : ${alreadyList}" th:text="${collect}" th:selected="${collect==taskName}">
+              Localhost
+            </option>
+          </select>
+        </label>
+      </div>
+    </form>
+  </div>
+
+  <script>
+      if (document.getElementById("returnCode").value !== "0") {
+          alert(document.getElementById("message").value);
+      }
+      // if (window.stop)
+      //     window.stop();
+      // else
+      //     document.execCommand("Stop");
+  </script>
+
+  <div class="row" style="text-align: center;">
+    <table class="table table-hover" style="text-align: left;">
+      <caption>String</caption>
+      <thead>
+      <tr>
+        <th>Key</th>
+        <th>Encoding</th>
+        <th>Idle time</th>
+        <th>Valid time</th>
+      </tr>
+      </thead>
+      <tbody>
+      <!--/*@thymesVar id="stringList" type=""*/-->
+      <!--/*@thymesVar id="page" type=""*/-->
+      <tr th:each="collect,iterStat : ${stringList}"
+          th:if="${iterStat.index}>=(${page}-1)*10"
+          th:unless = "${iterStat.index}>=${page}*10">
+        <td th:text="${collect['key']}">Key</td>
+        <td th:text="${collect['encoding']}">Encoding</td>
+        <!--<td th:text="${collect['count']}">0</td>-->
+        <td th:text="${collect['idleTime']}">0</td>
+        <td th:text="${collect['validTime']}">0</td>
+      </tr>
+      </tbody>
+    </table>
+    <ul class="pagination" style="margin-right: 15%; ">
+      <li class="disabled"><a href="#">&laquo;</a></li>
+      <!--/*@thymesVar id="pageCount" type=""*/-->
+      <!--/*@thymesVar id="page" type=""*/-->
+      <li th:each="i:${#numbers.sequence(1, pageCount)}"
+          th:onclick="'javascript:page_turning(\''+${i}+'\', \'string\')'"
+          th:class="${page == i}? 'active':''">
+        <a th:text="${i}"></a>
+      </li>
+      <li class="disabled"><a href="#">&raquo;</a></li>
+    </ul>
+
+  </div>
+</div>
+
+</body>
+</html>

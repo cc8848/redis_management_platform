@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html style="height: 100%" xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css"/>
+  <!--[if lt IE 9]>
+  <script src="http://cdn.static.runoob.com/libs/jquery/1.10.2/jquery.min.js"></script>
+  <![endif]-->
+  <!--[if gte IE 9]><!-->
+  <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+  <!--<![endif]-->
+  <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <!-- HTML5 Shim 和 Respond.js 用于让 IE8 支持 HTML5元素和媒体查询 -->
+  <!-- 注意： 如果通过 file://  引入 Respond.js 文件，则该文件无法起效果 -->
+  <!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+  <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+  <![endif]-->
+  <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/echarts.min.js"></script>
+  <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts-gl/echarts-gl.min.js"></script>
+  <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts-stat/ecStat.min.js"></script>
+  <script type="text/javascript"
+          src="http://echarts.baidu.com/gallery/vendors/echarts/extension/dataTool.min.js"></script>
+  <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/china.js"></script>
+  <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/world.js"></script>
+  <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&amp;ak=ZUONbpqGBsYGXNIYHicvbAbM"></script>
+  <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/extension/bmap.min.js"></script>
+  <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/simplex.js"></script>
+
+  <script type="text/javascript" src="/static/js/redis_data.js"></script>
+
+  <title>redis data</title>
+</head>
+<body style="height: 100%;">
+<!--/*@thymesVar id="taskName" type=""*/-->
+<input id = "taskName" type="hidden" th:value="${taskName}" />
+<div class="container" style="height: 100%;">
+  <div class="row col-sm-5">
+    <form role="form">
+      <div class="form-group">
+        <label>Please select redis: </label>
+        <label>
+          <select class="form-control" onchange="switchover(this.options[this.selectedIndex].text, '0')">
+            <!--/*@thymesVar id="alreadyList" type=""*/-->
+            <!--/*@thymesVar id="taskName" type=""*/-->
+            <option th:each="collect,iterStat : ${alreadyList}" th:text="${collect}" th:selected="${collect==taskName}">
+              Localhost
+            </option>
+          </select>
+        </label>
+      </div>
+    </form>
+  </div>
+  <div class="row col-sm-5">
+    <form role="form">
+      <div class="form-group">
+        <label>Please select abscissa: </label>
+        <label>
+          <select id = "unit" class="form-control" onchange="change_abscissa(this.options[this.selectedIndex].text, '0')">
+            <!--/*@thymesVar id="alreadyList" type=""*/-->
+            <!--/*@thymesVar id="taskName" type=""*/-->
+            <option id = "minute">minute</option>
+            <option id = "hour">hour</option>
+          </select>
+        </label>
+      </div>
+    </form>
+  </div>
+  <!--/*@thymesVar id="taskName" type=""*/-->
+  <div id="clients" style="height: 30%; width: 66%;" th:onclick="'javascript:linkToDetail(\''+${taskName}+'\', \'clients\')'"></div>
+  <div id="cpu" style="height: 30%; width: 66%;" th:onclick="'javascript:linkToDetail(\''+${taskName}+'\', \'cpu\')'"></div>
+  <div id="memory" style="height: 30%; width: 63%;" th:onclick="'javascript:linkToDetail(\''+${taskName}+'\', \'memory\')'"></div>
+</div>
+<script type="text/javascript" th:inline="javascript">
+    /*<![CDATA[*/
+    $("#unit").val([[${period}]]);
+    var isOK = [[${returnCode}]];
+    var message = [[${returnMessage}]];
+    if (isOK === "0") {
+        var connected_clients = [[${connected_clients}]];
+        var used_cpu_sys = [[${used_cpu_sys}]];
+        var used_memory_lua_human = [[${used_memory_lua_human}]];
+        var used_memory_rss_human = [[${used_memory_rss_human}]];
+        var used_memory_human = [[${used_memory_human}]];
+        var used_memory_peak_human = [[${used_memory_peak_human}]];
+        var abscissa = [[${abscissa}]];
+
+        init_all(connected_clients, used_cpu_sys, used_memory_lua_human, used_memory_rss_human, used_memory_human,
+            used_memory_peak_human, abscissa);
+    } else {
+        alert("failed: " + message);
+    }
+    /*]]>*/
+</script>
+</body>
+</html>
